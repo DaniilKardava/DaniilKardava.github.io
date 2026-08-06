@@ -62,6 +62,17 @@ p { color: var(--muted); line-height: 1.72; }
 .mini-board span { width: 18px; height: 18px; border-radius: 3px; background: var(--green-light); }
 .mini-board span:nth-child(6n + 2), .mini-board span:nth-child(6n + 3), .mini-board span:nth-child(13), .mini-board span:nth-child(19) { background: var(--orange); }
 .arrow { position: absolute; right: 36px; bottom: 34px; display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid var(--line); border-radius: 50%; font-size: 1.25rem; }
+.brownian-card { background: var(--green); color: #f8f5e9; }
+.brownian-card .project-number, .brownian-card p { color: rgba(248,245,233,.68); }
+.brownian-card h3 { margin-top: 140px; font-size: clamp(1.8rem, 3vw, 2.8rem); }
+.brownian-card .arrow { border-color: rgba(248,245,233,.24); }
+.signal-orbit { position: absolute; top: 36px; right: 38px; width: 122px; height: 122px; border: 1px solid rgba(248,245,233,.2); border-radius: 50%; }
+.signal-orbit::before, .signal-orbit::after { content: ""; position: absolute; inset: 20px; border: 1px solid rgba(248,245,233,.22); border-radius: 50%; }
+.signal-orbit::after { inset: 42px; background: var(--orange); border: 0; box-shadow: 0 0 34px rgba(229,107,63,.65); }
+.signal-orbit span { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+.signal-orbit span:nth-child(1) { top: 8px; left: 55px; }
+.signal-orbit span:nth-child(2) { right: 15px; bottom: 24px; }
+.signal-orbit span:nth-child(3) { left: 23px; bottom: 14px; }
 
 .project-hero { padding: 76px 0 90px; }
 .project-hero h1 { max-width: 1040px; font-size: clamp(3.5rem, 8vw, 7rem); }
@@ -99,6 +110,23 @@ p { color: var(--muted); line-height: 1.72; }
 .chart .curve { fill: none; stroke: var(--orange); stroke-linecap: round; stroke-linejoin: round; stroke-width: 4; }
 .chart .area { fill: url(#area-fill); }
 .caption { margin: 17px 0 0; font-size: .78rem; }
+.precision-card { padding: 34px; border: 1px solid var(--line); border-radius: 22px; background: #fbfaf5; box-shadow: var(--shadow); }
+.precision-head { display: flex; justify-content: space-between; gap: 20px; }
+.precision-head p { margin: 0; font-size: .82rem; }
+.precision-head > span { color: var(--muted); font-size: .75rem; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+.precision-axis { margin: 58px 0 42px; }
+.precision-track { position: relative; height: 8px; border-radius: 999px; background: var(--paper-deep); }
+.precision-track::before { content: "double precision neighborhood"; position: absolute; right: 6%; bottom: 18px; color: var(--muted); font-size: .68rem; }
+.precision-fill { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, var(--green), var(--yellow), var(--orange)); }
+.precision-fill::before, .precision-fill::after { content: ""; position: absolute; top: 50%; width: 14px; height: 14px; border: 3px solid #fbfaf5; border-radius: 50%; background: var(--green); transform: translateY(-50%); }
+.precision-fill::before { left: 0; }
+.precision-fill::after { right: 0; background: var(--orange); }
+.precision-labels { display: flex; justify-content: space-between; margin-top: 14px; font-family: Georgia, serif; font-size: 1.1rem; }
+.evidence-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.evidence-grid article { padding: 26px; border-right: 1px solid var(--line); }
+.evidence-grid article:last-child { border-right: 0; }
+.evidence-grid strong { display: block; margin-bottom: 8px; color: var(--green); font-family: Georgia, serif; font-size: 1.55rem; font-weight: 500; }
+.evidence-grid span { color: var(--muted); font-size: .78rem; line-height: 1.5; }
 
 .roadmap { counter-reset: roadmap; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .roadmap article { counter-increment: roadmap; min-height: 250px; padding: 28px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }
@@ -125,6 +153,11 @@ p { color: var(--muted); line-height: 1.72; }
   .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .roadmap article { min-height: 210px; }
   .roadmap article::before { margin-bottom: 42px; }
+  .precision-head { display: block; }
+  .precision-head > span { display: block; margin-top: 12px; }
+  .evidence-grid { grid-template-columns: 1fr; }
+  .evidence-grid article { border-right: 0; border-bottom: 1px solid var(--line); }
+  .evidence-grid article:last-child { border-bottom: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

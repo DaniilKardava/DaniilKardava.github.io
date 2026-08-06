@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="High-precision numerical experiments for resolving near-zero structure in Brownian Boost and ABMN computations.">
+  <title>Brownian Boost — Daniil Kardava</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav site-shell" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
+      <div class="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#evidence">Evidence</a>
+        <a href="https://github.com/DaniilKardava/BrownianBoost">Source ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="project-hero brownian-hero">
+      <div class="site-shell">
+        <p class="eyebrow">Scientific computing · Arbitrary precision · C++</p>
+        <h1>Making near-zero numerical structure visible.</h1>
+        <p class="lede">A numerical research workspace for studying the Brownian Boost / ABMN functions when the quantity of interest, <em>M</em>(x) − 1, can be smaller than ordinary floating-point noise.</p>
+        <ul class="project-meta" aria-label="Project technologies">
+          <li>Arb intervals</li><li>MPFR</li><li>OpenMP</li><li>Brent optimization</li><li>Python analysis</li>
+        </ul>
+        <div class="status-note">
+          <span class="status-dot" aria-hidden="true"></span>
+          <p><strong>Research in progress:</strong> the computational pipeline now resolves and certifies extremely small centered values across parameter sweeps. Current extremum and monotonicity patterns remain empirical hypotheses, not proved results.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell">
+        <div class="metric-grid" aria-label="Project summary">
+          <div class="metric"><strong>10,201</strong><span>points in an<br>Arb interval sweep</span></div>
+          <div class="metric"><strong>441/441</strong><span>magnitude points meeting<br>the truncation criterion</span></div>
+          <div class="metric"><strong>10<sup>−23</sup></strong><span>smallest observed<br>|M − 1| scale</span></div>
+          <div class="metric"><strong>7–98</strong><span>adaptive series<br>depth range</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="problem">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">The numerical problem</p>
+          <h2>The signal can hide inside the arithmetic.</h2>
+        </div>
+        <div class="body-copy">
+          <p>The experiments evaluate an iterated-series representation of <em>M</em>(x; κ, ρ) and study a maximum derived from it. In important regions, <em>M</em> is almost exactly 1—so subtracting 1 after a long computation can destroy the digits that decide magnitude or sign.</p>
+          <div class="formula">h(x; κ, ρ) = M(x; κ, ρ) − 1</div>
+          <p>A plausible-looking float is not enough. The code must distinguish a genuine value near zero from truncation error, root-finder failure, endpoint drift, and cancellation introduced by the representation itself.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Engineering approach</p>
+          <h2>Explore quickly. Recompute carefully. Track the error.</h2>
+          <p>The workspace maintains several numerical paths because speed, range, precision, and rigorous enclosures serve different roles.</p>
+        </div>
+        <div class="architecture">
+          <div class="arch-row"><span>Double</span><p>Fast C++ sweeps expose geometry and failure modes before expensive high-precision runs.</p></div>
+          <div class="arch-row"><span>MPFR</span><p>A configurable-precision implementation resolves centered values beyond float64 and supports large threaded sweeps.</p></div>
+          <div class="arch-row"><span>Arb</span><p>Interval arithmetic carries enclosures through the computation and records output radii.</p></div>
+          <div class="arch-row"><span>Truncation</span><p>Tail bounds determine adaptive series depth rather than relying on one fixed cutoff.</p></div>
+          <div class="arch-row"><span>Safeguards</span><p>Explicit bracketing, NaN-on-failure, centered evaluation, and endpoint pinning prevent silent numerical success.</p></div>
+          <div class="arch-row"><span>Scale</span><p>OpenMP and Savio cluster scripts parallelize parameter grids while keeping per-point diagnostics.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="evidence">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Existing evidence</p>
+            <h2>Eighteen orders of magnitude in one sweep.</h2>
+          </div>
+          <p>A current MPFR sweep over (κ, ρ) ∈ [0.5, 1]² contains 441 points. Every recorded point met its truncation criterion, with adaptive depth increasing from 7 to 98 terms as needed.</p>
+        </div>
+
+        <div class="precision-card">
+          <div class="precision-head">
+            <div><h3>Observed centered magnitude</h3><p>|M − 1| at the selected x evaluation</p></div>
+            <span>log₁₀ scale</span>
+          </div>
+          <div class="precision-axis" aria-label="Observed absolute M minus one values range from approximately ten to the minus twenty-three to ten to the minus five">
+            <div class="precision-track"><span class="precision-fill"></span></div>
+            <div class="precision-labels"><span>5.2 × 10<sup>−23</sup></span><span>2.46 × 10<sup>−5</sup></span></div>
+          </div>
+          <div class="evidence-grid">
+            <article><strong>961/961</strong><span>points met the criterion in a separate sign sweep</span></article>
+            <article><strong>552 / 409</strong><span>positive / negative signs in that exploratory map</span></article>
+            <article><strong>8.72 × 10<sup>−15</sup></strong><span>largest recorded interval radius in the 10,201-point Arb sweep</span></article>
+          </div>
+          <p class="caption">These are descriptive statistics from the current development datasets. See the <a href="brownian-boost/artifacts/sweep-summary.json">curated summary</a> and <a href="https://github.com/DaniilKardava/BrownianBoost">research workspace</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">What comes next</p><h2>Turn patterns into claims.</h2></div>
+          <p>The pipeline is now capable enough to support sharper experiments. The next draft should promote only results that survive cross-method checks and preserve their full run configuration.</p>
+        </div>
+        <div class="roadmap">
+          <article><h3>Canonical run</h3><p>Freeze one parameter domain, precision, tolerance, and code revision as a named, reproducible dataset.</p></article>
+          <article><h3>Cross-check</h3><p>Compare selected MPFR points against rigorous Arb intervals and quantify agreement and runtime cost.</p></article>
+          <article><h3>Test hypotheses</h3><p>Design targeted sweeps for the proposed extremum location and monotone truncation behavior before presenting either as a result.</p></article>
+        </div>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/DaniilKardava/BrownianBoost">Explore the source</a>
+          <a class="button secondary" href="../">Back to all projects</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner site-shell">
+      <span>© <span data-year></span> Daniil Kardava</span>
+      <span>Research in progress · exploratory results labeled accordingly</span>
+    </div>
+  </footer>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "status": "exploratory branch snapshot",
+  "source_repository": "DaniilKardava/BrownianBoost",
+  "arb_lambda_max_sweep": {
+    "points": 10201,
+    "centered_value_min": -5.163e-11,
+    "centered_value_max": 9.920e-5,
+    "maximum_interval_radius": 8.720e-15
+  },
+  "mpfr_magnitude_sweep": {
+    "points": 441,
+    "kappa_range": [0.5, 1.0],
+    "rho_range": [0.5, 1.0],
+    "absolute_centered_value_min": 5.209e-23,
+    "absolute_centered_value_max": 2.458e-5,
+    "points_meeting_truncation_criterion": 441,
+    "depth_range": [7, 98]
+  },
+  "mpfr_sign_sweep": {
+    "points": 961,
+    "points_meeting_truncation_criterion": 961,
+    "positive": 552,
+    "negative": 409
+  }
+}
