@@ -34,5 +34,19 @@
     "display_normalization": "per-slice L2 norm",
     "display_coordinate": "log(x) / log(b)",
     "saved_frames": 41
+  },
+  "portfolio_media": {
+    "lambda_max_parameter_space": {
+      "file": "lambda_max_parameter_space.png",
+      "source": "user-supplied exploratory rendering"
+    },
+    "m_curve_recording": {
+      "file": "m_curve_vibration_4x.mp4",
+      "source_duration_seconds": 36.096,
+      "display_duration_seconds": 8.967,
+      "speed_multiplier": 4,
+      "trimmed": false,
+      "audio_removed": true
+    }
   }
 }

@@ -12,6 +12,7 @@
     <nav class="nav site-shell" aria-label="Primary navigation">
       <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
       <div class="nav-links">
+        <a href="#context">Context</a>
         <a href="#problem">Problem</a>
         <a href="#evidence">Evidence</a>
         <a href="https://github.com/DaniilKardava/BrownianBoost">Source ↗</a>
@@ -31,6 +32,24 @@
         <div class="status-note">
           <span class="status-dot" aria-hidden="true"></span>
           <p><strong>Research in progress:</strong> the computational pipeline now resolves and certifies extremely small centered values across parameter sweeps. Current extremum and monotonicity patterns remain empirical hypotheses, not proved results.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="context">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Research context</p>
+          <h2>A tug-of-war where every push has a price.</h2>
+          <div class="paper-links">
+            <a href="https://arxiv.org/abs/2209.07451"><span>Discrete game</span><strong>On the Trail of Lost Pennies ↗</strong></a>
+            <a href="https://arxiv.org/abs/2510.07682"><span>Continuum limit</span><strong>From Tug-of-War to Brownian Boost ↗</strong></a>
+          </div>
+        </div>
+        <div class="body-copy">
+          <p>In Alan Hammond’s <em>Trail of Lost Pennies</em>, Maxine and Mina move a counter along the integers. At each turn both pay stakes from their own funds; if they stake a and b, the counter moves right with probability a/(a+b). Victory brings a terminal reward, but every stake remains a real cost. The resulting game asks how rational players spend now to improve a distant, uncertain outcome.</p>
+          <p>The game’s time-invariant Nash equilibria are encoded by positive ABMN solutions. For dimensionless parameters κ and ρ, the Mina margin map M<sub>κ,ρ</sub>(x) records the payoff margin of a standard solution. Its range is [λ<sub>max</sub><sup>−1</sup>, λ<sub>max</sub>], so λ<sub>max</sub>(κ,ρ) marks the largest reward asymmetry compatible with this family of equilibria.</p>
+          <p><em>Brownian Boost</em> carries the same resource-allocation question into a high-noise continuum limit. The counter becomes a diffusing particle on the real line, and the players continuously spend to influence its drift. Their equilibrium payoff derivatives satisfy coupled nonlinear ODEs. This project builds the numerical machinery needed to evaluate the explicit ABMN formulas and map the delicate boundary λ<sub>max</sub>.</p>
         </div>
       </div>
     </section>
@@ -89,8 +108,21 @@
         </div>
 
         <figure class="animation-frame">
+          <img src="brownian-boost/artifacts/lambda_max_parameter_space.png" alt="Grayscale heatmap of lambda max over the kappa and rho parameter space">
+          <figcaption><strong>λ<sub>max</sub> across parameter space.</strong> An exploratory rendering over κ, ρ ∈ [0.4, 1]. Lighter values indicate a larger estimated admissible payoff asymmetry; the narrow bright contours are useful targets for more focused, precision-controlled sweeps.</figcaption>
+        </figure>
+
+        <figure class="animation-frame">
+          <video autoplay muted loop playsinline controls preload="metadata">
+            <source src="brownian-boost/artifacts/m_curve_vibration_4x.mp4" type="video/mp4">
+            Your browser does not support embedded MP4 video.
+          </video>
+          <figcaption><strong>The M curve begins to vibrate.</strong> The full supplied 36-second recording, accelerated 4× without trimming. The increasingly fine oscillation illustrates why the small-ρ regime is both visually striking and numerically demanding.</figcaption>
+        </figure>
+
+        <figure class="animation-frame">
           <img src="brownian-boost/artifacts/m_curve_rho_to_zero.gif" alt="Animated normalized centered M curve changing shape as rho decreases from 1 to 0.05">
-          <figcaption><strong>Shape evolution as ρ → 0.</strong> 81 slices from ρ = 1 to 0.05 at κ = 1; each centered curve is L²-normalized and plotted on the transformed coordinate log(x)/log(b). The animation shows shape, not absolute amplitude.</figcaption>
+          <figcaption><strong>A normalized reconstruction of the ρ → 0 sweep.</strong> 81 slices from ρ = 1 to 0.05 at κ = 1; each centered curve is L²-normalized and plotted on the transformed coordinate log(x)/log(b). This companion animation isolates shape rather than absolute amplitude.</figcaption>
         </figure>
 
         <div class="precision-card">
