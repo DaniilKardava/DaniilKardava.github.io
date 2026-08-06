@@ -1,0 +1,40 @@
+{
+  "source_workspace": "Clarkson",
+  "source_repository": "DaniilKardava/POD-Galerkin",
+  "source_revision": "15844b1e5bb2ebcee41b6f2d48006e5e56d84f87",
+  "method": {
+    "name": "statewise sequential POD-Galerkin solve",
+    "basis": "one POD basis per eigenstate family",
+    "orthogonality": "coefficient-space nullspace against previously accepted physical-space states",
+    "online_problem": "lowest Ritz pair of each constrained local reduced Hamiltonian"
+  },
+  "scaling_benchmark": {
+    "global_dense_high_k_edge_exponents": {
+      "1600_to_3000": 2.3883758835957196,
+      "3000_to_6000": 2.407524838114899,
+      "6000_to_10000": 2.5601551641189735
+    },
+    "local_sequential_high_k_edge_exponents": {
+      "800_to_1600": 1.116727398171345,
+      "1600_to_3000": 1.3335968030565046
+    },
+    "caveat": "global dense solve remains faster in absolute measured wall time at K=3000; no empirical crossover is claimed"
+  },
+  "accuracy_benchmark": {
+    "problem": "5x5 square quantum-well system",
+    "requested_states": 3000,
+    "validated_states": 2990,
+    "excluded_state_range": [2991, 3000],
+    "exclusion_reason": "DNS-overlap disagreement begins at state 2991",
+    "median_absolute_energy_error": 3.44113685102343e-7,
+    "maximum_absolute_energy_error": 6.83879492555661e-5,
+    "median_absolute_dns_overlap": 0.999985670925971,
+    "minimum_absolute_dns_overlap": 0.997070338156217
+  },
+  "portfolio_media": [
+    "gaussian_eigenstates_1_12.png",
+    "local_vs_global_scaling.png",
+    "spectrum_agreement_2990.png",
+    "relative_eigenvalue_error_2990.png"
+  ]
+}
