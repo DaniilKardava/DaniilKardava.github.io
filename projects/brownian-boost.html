@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="High-precision numerical experiments for resolving near-zero structure in Brownian Boost and ABMN computations.">
+  <meta name="description" content="Brownian Boost: studying how asymmetric incentives shape equilibrium in a player-funded tug-of-war.">
   <title>Brownian Boost — Daniil Kardava</title>
   <link rel="stylesheet" href="../assets/styles.css">
 </head>
@@ -13,8 +13,8 @@
       <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
       <div class="nav-links">
         <a href="#context">Context</a>
-        <a href="#problem">Problem</a>
-        <a href="#evidence">Evidence</a>
+        <a href="#numerical">Numerical</a>
+        <a href="#theoretical">Theory</a>
         <a href="https://github.com/DaniilKardava/BrownianBoost">Source ↗</a>
       </div>
     </nav>
@@ -23,93 +23,98 @@
   <main>
     <section class="project-hero brownian-hero">
       <div class="site-shell">
-        <p class="eyebrow">Scientific computing · Arbitrary precision · C++</p>
-        <h1>Making near-zero numerical structure visible.</h1>
-        <p class="lede">A numerical research workspace for studying the Brownian Boost / ABMN functions when the quantity of interest, <em>M</em>(x) − 1, can be smaller than ordinary floating-point noise.</p>
-        <ul class="project-meta" aria-label="Project technologies">
-          <li>Arb intervals</li><li>MPFR</li><li>OpenMP</li><li>Brent optimization</li><li>Python analysis</li>
+        <p class="eyebrow">Game theory · Probability · Scientific computing</p>
+        <h1>Brownian Boost: incentives in motion.</h1>
+        <p class="lede">A research project about a simple strategic tension: when two players can pay to influence a random contest, how does an imbalance in their incentives reshape the equilibrium?</p>
+        <ul class="project-meta" aria-label="Project themes">
+          <li>Stochastic games</li><li>Asymmetric incentives</li><li>Equilibrium</li><li>High-precision computation</li>
         </ul>
-        <div class="status-note">
-          <span class="status-dot" aria-hidden="true"></span>
-          <p><strong>Research in progress:</strong> the computational pipeline now resolves and certifies extremely small centered values across parameter sweeps. Current extremum and monotonicity patterns remain empirical hypotheses, not proved results.</p>
-        </div>
       </div>
     </section>
 
     <section class="section" id="context">
       <div class="site-shell split">
         <div>
-          <p class="eyebrow">Research context</p>
-          <h2>A tug-of-war where every push has a price.</h2>
+          <p class="eyebrow">The central idea</p>
+          <h2>M measures the imbalance.</h2>
           <div class="paper-links">
             <a href="https://arxiv.org/abs/2209.07451"><span>Discrete game</span><strong>On the Trail of Lost Pennies ↗</strong></a>
             <a href="https://arxiv.org/abs/2510.07682"><span>Continuum limit</span><strong>From Tug-of-War to Brownian Boost ↗</strong></a>
           </div>
         </div>
         <div class="body-copy">
-          <p>In Alan Hammond’s <em>Trail of Lost Pennies</em>, Maxine and Mina move a counter along the integers. At each turn both pay stakes from their own funds; if they stake a and b, the counter moves right with probability a/(a+b). Victory brings a terminal reward, but every stake remains a real cost. The resulting game asks how rational players spend now to improve a distant, uncertain outcome.</p>
-          <p>The game’s time-invariant Nash equilibria are encoded by positive ABMN solutions. For dimensionless parameters κ and ρ, the Mina margin map M<sub>κ,ρ</sub>(x) records the payoff margin of a standard solution. Its range is [λ<sub>max</sub><sup>−1</sup>, λ<sub>max</sub>], so λ<sub>max</sub>(κ,ρ) marks the largest reward asymmetry compatible with this family of equilibria.</p>
-          <p><em>Brownian Boost</em> carries the same resource-allocation question into a high-noise continuum limit. The counter becomes a diffusing particle on the real line, and the players continuously spend to influence its drift. Their equilibrium payoff derivatives satisfy coupled nonlinear ODEs. This project builds the numerical machinery needed to evaluate the explicit ABMN formulas and map the delicate boundary λ<sub>max</sub>.</p>
+          <p>Imagine two players trying to move a token toward opposite ends of a line. Before every move, each player chooses how much to spend. Spending more makes the next move more likely to go your way—but that money is gone whether or not you eventually win.</p>
+          <p>This creates a tradeoff between influence now and reward later. If the two players value victory differently, they should not spend in the same way. The function <em>M</em> tracks that asymmetry through the state of the game: it measures how the equilibrium changes when one player has stronger incentives than the other.</p>
+          <div class="formula">M = 1 <span>balanced incentives</span> &nbsp;·&nbsp; M ≠ 1 <span>asymmetric incentives</span></div>
+          <p>The largest value reached by this curve, λ<sub>max</sub>, summarizes how much asymmetry a given set of game parameters can support. Mapping <em>M</em> and λ<sub>max</sub> is therefore a way to map the possible equilibrium behavior of the game.</p>
+          <p><em>Brownian Boost</em> is the continuous, high-noise version of this player-funded tug-of-war. Instead of a token making individual jumps, a particle diffuses along the real line while both players continuously pay to influence its drift.</p>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="site-shell">
-        <div class="metric-grid" aria-label="Project summary">
-          <div class="metric"><strong>10,201</strong><span>points in an<br>Arb interval sweep</span></div>
-          <div class="metric"><strong>441/441</strong><span>magnitude points meeting<br>the truncation criterion</span></div>
-          <div class="metric"><strong>10<sup>−23</sup></strong><span>smallest observed<br>|M − 1| scale</span></div>
-          <div class="metric"><strong>7–98</strong><span>adaptive series<br>depth range</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="problem">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">The numerical problem</p>
-          <h2>The signal can hide inside the arithmetic.</h2>
-        </div>
-        <div class="body-copy">
-          <p>The experiments evaluate an iterated-series representation of <em>M</em>(x; κ, ρ) and study a maximum derived from it. In important regions, <em>M</em> is almost exactly 1—so subtracting 1 after a long computation can destroy the digits that decide magnitude or sign.</p>
-          <div class="formula">h(x; κ, ρ) = M(x; κ, ρ) − 1</div>
-          <p>A plausible-looking float is not enough. The code must distinguish a genuine value near zero from truncation error, root-finder failure, endpoint drift, and cancellation introduced by the representation itself.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">Engineering approach</p>
-          <h2>Explore quickly. Recompute carefully. Track the error.</h2>
-          <p>The workspace maintains several numerical paths because speed, range, precision, and rigorous enclosures serve different roles.</p>
-        </div>
-        <div class="architecture">
-          <div class="arch-row"><span>Double</span><p>Fast C++ sweeps expose geometry and failure modes before expensive high-precision runs.</p></div>
-          <div class="arch-row"><span>MPFR</span><p>A configurable-precision implementation resolves centered values beyond float64 and supports large threaded sweeps.</p></div>
-          <div class="arch-row"><span>Arb</span><p>Interval arithmetic carries enclosures through the computation and records output radii.</p></div>
-          <div class="arch-row"><span>Truncation</span><p>Tail bounds determine adaptive series depth rather than relying on one fixed cutoff.</p></div>
-          <div class="arch-row"><span>Safeguards</span><p>Explicit bracketing, NaN-on-failure, centered evaluation, and endpoint pinning prevent silent numerical success.</p></div>
-          <div class="arch-row"><span>Scale</span><p>OpenMP and Savio cluster scripts parallelize parameter grids while keeping per-point diagnostics.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="evidence">
+    <section class="section project-tracks" aria-labelledby="tracks-title">
       <div class="site-shell">
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">Existing evidence</p>
-            <h2>Eighteen orders of magnitude in one sweep.</h2>
-          </div>
-          <p>A current MPFR sweep over (κ, ρ) ∈ [0.5, 1]² contains 441 points. Every recorded point met its truncation criterion, with adaptive depth increasing from 7 to 98 terms as needed.</p>
+          <div><p class="eyebrow">Two directions</p><h2 id="tracks-title">One object, two ways to study it.</h2></div>
+          <p>The project combines computational experiments with a developing theoretical account of why the curves have the structure we observe.</p>
+        </div>
+        <div class="track-grid">
+          <a class="track-card active" href="#numerical">
+            <span>01 · Numerical</span>
+            <h3>Compute M reliably.</h3>
+            <p>Resolve a delicate, slowly converging series and explore how its shape changes across parameter space.</p>
+          </a>
+          <a class="track-card" href="#theoretical">
+            <span>02 · Theoretical</span>
+            <h3>Explain the structure.</h3>
+            <p>Develop analytic descriptions of the incentive asymmetry, its extrema, and its limiting behavior.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="numerical">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Numerical track</p>
+          <h2>A small signal hidden in a large series.</h2>
+        </div>
+        <div class="body-copy">
+          <p>The formulas for <em>M</em> are explicit, but evaluating them is not straightforward. Each value is assembled from a long iterated series. In the most interesting regimes, many large contributions nearly cancel and leave a result extremely close to 1.</p>
+          <div class="formula">h(x; κ, ρ) = M(x; κ, ρ) − 1</div>
+          <p>Ordinary floating-point arithmetic can lose the tiny remainder that tells us which player has the stronger local incentive. As ρ becomes small, the series also requires more terms and the curve develops increasingly fine oscillations. The computational challenge is to preserve that structure without mistaking numerical noise for behavior of the model.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Techniques used</p>
+          <h2>Explore quickly. Recompute carefully. Track the error.</h2>
+          <p>Several numerical paths let the project trade speed for precision and then check delicate regions with stronger methods.</p>
+        </div>
+        <div class="architecture">
+          <div class="arch-row"><span>Double</span><p>Fast C++ sweeps reveal the broad geometry and identify regions that deserve closer inspection.</p></div>
+          <div class="arch-row"><span>MPFR</span><p>Configurable-precision arithmetic preserves centered values that disappear in ordinary float64 calculations.</p></div>
+          <div class="arch-row"><span>Arb</span><p>Interval arithmetic encloses results and makes numerical uncertainty visible instead of hiding it in a decimal.</p></div>
+          <div class="arch-row"><span>Truncation</span><p>Tail bounds choose the series depth adaptively as the parameters move into more difficult regimes.</p></div>
+          <div class="arch-row"><span>Safeguards</span><p>Explicit bracketing, centered evaluation, and endpoint handling prevent optimization failures from looking like valid answers.</p></div>
+          <div class="arch-row"><span>Scale</span><p>OpenMP and cluster scripts distribute parameter sweeps while retaining the diagnostics needed to revisit each point.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="results">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">What the computation reveals</p><h2>From incentive maps to vibrating curves.</h2></div>
+          <p>The same object can be viewed globally across parameters or locally as a curve. Together, these views show where asymmetric incentives are strongest and how the structure becomes more intricate near the edge of the parameter regime.</p>
         </div>
 
         <figure class="animation-frame">
           <img src="brownian-boost/artifacts/lambda_max_parameter_space.png" alt="Grayscale heatmap of lambda max over the kappa and rho parameter space">
-          <figcaption><strong>λ<sub>max</sub> across parameter space.</strong> An exploratory rendering over κ, ρ ∈ [0.4, 1]. Lighter values indicate a larger estimated admissible payoff asymmetry; the narrow bright contours are useful targets for more focused, precision-controlled sweeps.</figcaption>
+          <figcaption><strong>The maximum incentive asymmetry across parameter space.</strong> Each point represents a choice of the dimensionless parameters κ and ρ. Lighter values indicate a larger λ<sub>max</sub>: a greater asymmetry supported by the corresponding equilibrium. The bright contours organize the parameter space into repeated bands.</figcaption>
         </figure>
 
         <figure class="animation-frame">
@@ -117,46 +122,28 @@
             <source src="brownian-boost/artifacts/m_curve_vibration_4x.mp4" type="video/mp4">
             Your browser does not support embedded MP4 video.
           </video>
-          <figcaption><strong>The M curve begins to vibrate.</strong> The full supplied 36-second recording, accelerated 4× without trimming. The increasingly fine oscillation illustrates why the small-ρ regime is both visually striking and numerically demanding.</figcaption>
+          <figcaption><strong>The M curve as ρ approaches zero.</strong> The curve records incentive asymmetry across the state variable. As ρ decreases, new oscillations appear and concentrate at finer scales—the “vibration” that makes this limit visually compelling and numerically unstable. The full recording is shown at 4× speed without trimming.</figcaption>
         </figure>
+      </div>
+    </section>
 
-        <figure class="animation-frame">
-          <img src="brownian-boost/artifacts/m_curve_rho_to_zero.gif" alt="Animated normalized centered M curve changing shape as rho decreases from 1 to 0.05">
-          <figcaption><strong>A normalized reconstruction of the ρ → 0 sweep.</strong> 81 slices from ρ = 1 to 0.05 at κ = 1; each centered curve is L²-normalized and plotted on the transformed coordinate log(x)/log(b). This companion animation isolates shape rather than absolute amplitude.</figcaption>
-        </figure>
-
-        <div class="precision-card">
-          <div class="precision-head">
-            <div><h3>Observed centered magnitude</h3><p>|M − 1| at the selected x evaluation</p></div>
-            <span>log₁₀ scale</span>
-          </div>
-          <div class="precision-axis" aria-label="Observed absolute M minus one values range from approximately ten to the minus twenty-three to ten to the minus five">
-            <div class="precision-track"><span class="precision-fill"></span></div>
-            <div class="precision-labels"><span>5.2 × 10<sup>−23</sup></span><span>2.46 × 10<sup>−5</sup></span></div>
-          </div>
-          <div class="evidence-grid">
-            <article><strong>961/961</strong><span>points met the criterion in a separate sign sweep</span></article>
-            <article><strong>552 / 409</strong><span>positive / negative signs in that exploratory map</span></article>
-            <article><strong>8.72 × 10<sup>−15</sup></strong><span>largest recorded interval radius in the 10,201-point Arb sweep</span></article>
-          </div>
-          <p class="caption">These are descriptive statistics from the current development datasets. See the <a href="brownian-boost/artifacts/sweep-summary.json">curated summary</a> and <a href="https://github.com/DaniilKardava/BrownianBoost">research workspace</a>.</p>
+    <section class="section" id="theoretical">
+      <div class="site-shell theory-placeholder">
+        <div>
+          <p class="eyebrow">Theoretical track</p>
+          <h2>Why does M have this shape?</h2>
+        </div>
+        <div>
+          <p>The theoretical side will connect the geometry seen in the experiments to the underlying equilibrium equations: how asymmetry propagates through the game, why λ<sub>max</sub> forms bands in parameter space, and what controls the oscillatory small-ρ limit.</p>
+          <span class="coming-soon">Analysis in progress · this section will grow with the project</span>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="site-shell">
-        <div class="section-heading">
-          <div><p class="eyebrow">What comes next</p><h2>Turn patterns into claims.</h2></div>
-          <p>The pipeline is now capable enough to support sharper experiments. The next draft should promote only results that survive cross-method checks and preserve their full run configuration.</p>
-        </div>
-        <div class="roadmap">
-          <article><h3>Canonical run</h3><p>Freeze one parameter domain, precision, tolerance, and code revision as a named, reproducible dataset.</p></article>
-          <article><h3>Cross-check</h3><p>Compare selected MPFR points against rigorous Arb intervals and quantify agreement and runtime cost.</p></article>
-          <article><h3>Test hypotheses</h3><p>Design targeted sweeps for the proposed extremum location and monotone truncation behavior before presenting either as a result.</p></article>
-        </div>
         <div class="hero-actions">
-          <a class="button primary" href="https://github.com/DaniilKardava/BrownianBoost">Explore the source</a>
+          <a class="button primary" href="https://github.com/DaniilKardava/BrownianBoost">Explore the research workspace</a>
           <a class="button secondary" href="../">Back to all projects</a>
         </div>
       </div>
@@ -166,7 +153,7 @@
   <footer class="footer">
     <div class="footer-inner site-shell">
       <span>© <span data-year></span> Daniil Kardava</span>
-      <span>Research in progress · exploratory results labeled accordingly</span>
+      <span>Research in progress · numerical and theoretical work developed together</span>
     </div>
   </footer>
   <script src="../assets/site.js"></script>
