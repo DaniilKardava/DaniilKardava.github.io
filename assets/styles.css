@@ -110,6 +110,10 @@ p { color: var(--muted); line-height: 1.72; }
 .chart .curve { fill: none; stroke: var(--orange); stroke-linecap: round; stroke-linejoin: round; stroke-width: 4; }
 .chart .area { fill: url(#area-fill); }
 .caption { margin: 17px 0 0; font-size: .78rem; }
+.animation-frame { margin: 0 0 26px; padding: 14px; border: 1px solid var(--line); border-radius: 22px; background: #fbfaf5; box-shadow: var(--shadow); }
+.animation-frame img { width: 100%; border-radius: 12px; }
+.animation-frame figcaption { padding: 15px 8px 5px; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+.animation-frame figcaption strong { color: var(--ink); }
 .precision-card { padding: 34px; border: 1px solid var(--line); border-radius: 22px; background: #fbfaf5; box-shadow: var(--shadow); }
 .precision-head { display: flex; justify-content: space-between; gap: 20px; }
 .precision-head p { margin: 0; font-size: .82rem; }

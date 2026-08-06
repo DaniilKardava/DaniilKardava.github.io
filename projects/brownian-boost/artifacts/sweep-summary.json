@@ -21,5 +21,18 @@
     "points_meeting_truncation_criterion": 961,
     "positive": 552,
     "negative": 409
+  },
+  "rho_animation_sweep": {
+    "kappa": 1.0,
+    "rho_range": [0.05, 1.0],
+    "rho_slices": 81,
+    "x_points_per_slice": 241,
+    "total_points": 19521,
+    "truncation_target": 1e-8,
+    "points_meeting_truncation_criterion": 19521,
+    "series_depth_range": [4, 91],
+    "display_normalization": "per-slice L2 norm",
+    "display_coordinate": "log(x) / log(b)",
+    "saved_frames": 41
   }
 }
