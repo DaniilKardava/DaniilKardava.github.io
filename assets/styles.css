@@ -95,6 +95,12 @@ p { color: var(--muted); line-height: 1.72; }
 .academic-themes h3 { margin: 0 0 7px; }
 .academic-themes p { margin: 0; font-size: .86rem; }
 .term-list { display: grid; gap: 24px; }
+.institution-heading { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-top: 12px; padding: 0 4px 16px; border-bottom: 1px solid var(--line); }
+.institution-heading.berkeley-heading { margin-top: 50px; }
+.institution-heading div { display: grid; gap: 6px; }
+.institution-heading span { font-family: Georgia, serif; font-size: clamp(1.55rem, 3vw, 2.35rem); letter-spacing: -.03em; }
+.institution-heading strong { color: var(--green); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; }
+.institution-heading p { max-width: 350px; margin: 0; font-size: .8rem; text-align: right; }
 .term { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.3); }
 .term > header { display: flex; justify-content: space-between; gap: 20px; padding: 17px 22px; color: #f8f5e9; background: var(--green); }
 .term > header span { font-family: Georgia, serif; font-size: 1.18rem; }
@@ -206,6 +212,8 @@ p { color: var(--muted); line-height: 1.72; }
   .academic-stats { grid-template-columns: 1fr; max-width: none; }
   .course-row { grid-template-columns: 90px 1fr 38px; gap: 10px; padding: 16px; }
   .course-row h3 { font-size: .95rem; }
+  .institution-heading { display: block; }
+  .institution-heading p { margin-top: 10px; text-align: left; }
   .metric:nth-child(2) { border-right: 0; }
   .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .roadmap article { min-height: 210px; }
