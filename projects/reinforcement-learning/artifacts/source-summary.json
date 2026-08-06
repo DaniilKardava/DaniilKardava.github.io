@@ -1,7 +1,33 @@
 {
   "source_repository": "DaniilKardava/ReinforcementLearning",
   "source_revision": "0bf6a0f0c7c269d6b9bbb91c487b5ff66f059592",
-  "focus": "2048-Keras",
+  "focus": ["2048-Scratch", "2048-Keras"],
+  "implementations": {
+    "from_scratch": {
+      "numerical_dependencies": ["NumPy", "SciPy"],
+      "implemented_components": [
+        "convolutional layers",
+        "dense layers",
+        "backpropagation",
+        "activation functions and derivatives",
+        "weight initialization",
+        "Adam and SGD optimizers",
+        "advantage actor-critic update"
+      ],
+      "training_episode_limit": 10000
+    },
+    "with_libraries": {
+      "frameworks": ["TensorFlow", "Keras"],
+      "implemented_components": [
+        "policy model",
+        "value model",
+        "custom gradient-tape training",
+        "model checkpointing",
+        "Pygame evaluation"
+      ],
+      "training_episode_limit": 20000
+    }
+  },
   "environment": {
     "board_shape": [4, 4],
     "actions": ["right", "left", "up", "down"],
@@ -17,7 +43,6 @@
     "networks": ["policy", "value"],
     "convolution_filters": [128, 64],
     "dense_units": 256,
-    "training_episode_limit": 20000,
     "training_curve_window": 50
   },
   "portfolio_media": {
