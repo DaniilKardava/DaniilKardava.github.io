@@ -1,0 +1,22 @@
+{
+  "experiment": "small_exact_validation",
+  "model": "ordered labeled ships with replacement; overflow energy",
+  "grid_size": 4,
+  "ship_length": 2,
+  "ship_count": 3,
+  "single_ship_positions": 24,
+  "total_configurations": 13824,
+  "exact_zero_energy_configurations": 6264,
+  "samples_per_beta": 4000,
+  "burn_in_sweeps": 50,
+  "seed": 20260802,
+  "beta_min": 0.00000000,
+  "beta_max": 6.00000000,
+  "beta_step": 0.25000000,
+  "curve_rmse": 0.00498648,
+  "max_absolute_error": 0.01731461,
+  "exact_log_partition_ratio": 0.79158725,
+  "trapezoid_exact_integral_0_to_6": 0.79300468,
+  "trapezoid_sampled_integral_0_to_6": 0.79262500,
+  "sampled_zero_energy_estimate": 6257.50292687
+}

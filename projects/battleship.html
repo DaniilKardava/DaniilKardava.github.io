@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A computational study of ship-configuration counting using Gibbs sampling and Boltzmann weights.">
+  <title>Counting Ship Configurations — Daniil Kardava</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav site-shell" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
+      <div class="nav-links">
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+        <a href="https://github.com/DaniilKardava/Battleship">Source ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="project-hero">
+      <div class="site-shell">
+        <p class="eyebrow">Monte Carlo · Statistical mechanics · C++</p>
+        <h1>How many ways can ships share a board without colliding?</h1>
+        <p class="lede">An exploratory computational approach to a hard counting problem: soften the non-overlap constraint, sample the resulting energy landscape, and recover information about valid configurations.</p>
+        <ul class="project-meta" aria-label="Project technologies">
+          <li>Gibbs sampling</li><li>Boltzmann distributions</li><li>Python prototype</li><li>C++ optimization</li>
+        </ul>
+        <div class="status-note">
+          <span class="status-dot" aria-hidden="true"></span>
+          <p><strong>Milestone reached:</strong> on an exactly enumerable 4×4 case, the sampler reproduced the energy curve with 0.005 RMSE and recovered the number of valid configurations to within 0.11%.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell">
+        <div class="metric-grid" aria-label="Project summary">
+          <div class="metric"><strong>2</strong><span>implementations<br>Python + C++</span></div>
+          <div class="metric"><strong>4</strong><span>supported<br>energy models</span></div>
+          <div class="metric"><strong>100k</strong><span>seeded samples in<br>the validation run</span></div>
+          <div class="metric"><strong>0.10%</strong><span>configuration-count<br>error</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="method">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">The idea</p>
+          <h2>Turn a hard constraint into a temperature.</h2>
+        </div>
+        <div class="body-copy">
+          <p>Directly counting non-overlapping placements becomes difficult as the grid and fleet grow. Instead, the model allows overlaps and assigns an energy to them. A Gibbs sampler removes one ship at a time and redraws its position conditioned on the rest of the board.</p>
+          <div class="formula" aria-label="Conditional probability is proportional to exponential negative beta times energy">P(s | others) ∝ exp(−β E(s))</div>
+          <p>At low inverse temperature β, collisions are common. Raising β suppresses them until the distribution concentrates on zero-overlap configurations. Average energy along that path is connected to the change in the log partition function.</p>
+          <div class="formula" aria-label="Derivative of log Z with respect to beta equals negative expected energy">d log Z(β) / dβ = −𝔼β[E]</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Implementation</p>
+          <h2>Prototype first. Then remove work.</h2>
+          <p>The optimization strategy was driven by the structure of the sampler: each move changes only a few squares, and energy takes values in a small discrete range.</p>
+        </div>
+        <div class="architecture">
+          <div class="arch-row"><span>Python</span><p>NumPy prototype established the grid representation, energy models, and Gibbs update.</p></div>
+          <div class="arch-row"><span>C++</span><p>The sampler was ported for larger experiments and profiled iteratively.</p></div>
+          <div class="arch-row"><span>Local updates</span><p>Only candidate placements intersecting a changed square have their energy updated.</p></div>
+          <div class="arch-row"><span>Buckets</span><p>Placements are grouped by integer energy, replacing repeated full-vector probability calculations.</p></div>
+          <div class="arch-row"><span>Sampling</span><p>A custom weighted draw selects an energy bucket and then a placement within it.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="results">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Exact validation</p>
+            <h2>The sampler tracks ground truth.</h2>
+          </div>
+          <p>For three labeled length-2 ships on a 4×4 board, all 13,824 configurations can be enumerated. A fixed-seed run used 4,000 independently initialized samples at each of 25 β values and closely followed the exact Boltzmann expectation.</p>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div><h3>Mean overflow energy</h3><p>Exact enumeration vs. Gibbs samples · β = 0…6</p></div>
+            <div class="chart-legends"><p class="chart-legend exact">Exact</p><p class="chart-legend sampled">Sampled</p></div>
+          </div>
+          <svg class="chart" viewBox="0 0 900 360" role="img" aria-labelledby="chart-title chart-desc">
+            <title id="chart-title">Exact and sampled mean overflow energy across inverse temperature</title>
+            <desc id="chart-desc">The sampled points closely follow the exact energy curve from beta zero through six.</desc>
+            <line class="grid" x1="68" y1="28" x2="870" y2="28"/><line class="grid" x1="68" y1="97" x2="870" y2="97"/><line class="grid" x1="68" y1="165" x2="870" y2="165"/><line class="grid" x1="68" y1="234" x2="870" y2="234"/><line class="grid" x1="68" y1="302" x2="870" y2="302"/>
+            <text x="34" y="32">0.8</text><text x="34" y="101">0.6</text><text x="34" y="169">0.4</text><text x="34" y="238">0.2</text><text x="34" y="306">0.0</text>
+            <path class="curve" d="M68 43 L101 95 L135 138 L168 173 L202 201 L235 223 L269 240 L302 254 L336 265 L369 273 L403 279 L436 284 L469 288 L503 291 L536 294 L570 296 L603 297 L636 298 L670 299 L703 300 L737 300 L770 301 L803 301 L837 301 L870 301"/>
+            <g fill="#164f3c" stroke="#fbfaf5" stroke-width="2">
+              <circle cx="68" cy="41" r="4"/><circle cx="101" cy="97" r="4"/><circle cx="135" cy="139" r="4"/><circle cx="168" cy="171" r="4"/><circle cx="202" cy="207" r="4"/><circle cx="235" cy="223" r="4"/><circle cx="269" cy="239" r="4"/><circle cx="302" cy="250" r="4"/><circle cx="336" cy="264" r="4"/><circle cx="369" cy="273" r="4"/><circle cx="403" cy="277" r="4"/><circle cx="436" cy="285" r="4"/><circle cx="469" cy="288" r="4"/><circle cx="503" cy="291" r="4"/><circle cx="536" cy="295" r="4"/><circle cx="570" cy="296" r="4"/><circle cx="603" cy="297" r="4"/><circle cx="636" cy="297" r="4"/><circle cx="670" cy="299" r="4"/><circle cx="703" cy="299" r="4"/><circle cx="737" cy="300" r="4"/><circle cx="770" cy="301" r="4"/><circle cx="803" cy="301" r="4"/><circle cx="837" cy="301" r="4"/><circle cx="870" cy="301" r="4"/>
+            </g>
+            <text x="65" y="330">0</text><text x="330" y="330">2</text><text x="598" y="330">4</text><text x="864" y="330">6</text>
+            <text x="405" y="354">inverse temperature β</text>
+          </svg>
+          <p class="caption">Curve RMSE: 0.00499. Thermodynamic integration estimated 6,257.5 zero-energy configurations; exhaustive enumeration gives 6,264. See the <a href="https://github.com/DaniilKardava/Battleship/blob/agent/publish-project-site/CVersion/validation.cpp">validation source</a>, <a href="battleship/artifacts/small_exact_validation.csv">curve data</a>, and <a href="battleship/artifacts/small_exact_validation.json">experiment metadata</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">What comes next</p><h2>From validation to scale.</h2></div>
+          <p>The small case validates the computational approach. The next experiments should quantify mixing and performance on instances that cannot be exhaustively enumerated.</p>
+        </div>
+        <div class="roadmap">
+          <article><h3>Validated</h3><p>The 4×4 exact case now establishes agreement between enumeration, Gibbs sampling, and thermodynamic integration.</p></article>
+          <article><h3>Measure mixing</h3><p>Estimate autocorrelation and sensitivity to burn-in across several ship densities and β schedules.</p></article>
+          <article><h3>Scale</h3><p>Run a larger ship instance, report the estimated count or partition-function ratio, and profile the benefit of bucketed local updates.</p></article>
+        </div>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/DaniilKardava/Battleship">Explore the source</a>
+          <a class="button secondary" href="../">Back to all projects</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner site-shell">
+      <span>© <span data-year></span> Daniil Kardava</span>
+      <span>Research in progress · claims labeled accordingly</span>
+    </div>
+  </footer>
+  <script src="../assets/site.js"></script>
+</body>
+</html>
