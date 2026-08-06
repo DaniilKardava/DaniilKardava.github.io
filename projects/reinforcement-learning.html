@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An actor–critic reinforcement-learning agent trained to play 2048.">
+  <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav site-shell" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
+      <div class="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#agent">Agent</a>
+        <a href="#results">Results</a>
+        <a href="https://github.com/DaniilKardava/ReinforcementLearning">Source ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="project-hero rl-hero">
+      <div class="site-shell">
+        <p class="eyebrow">Reinforcement learning · Neural networks · Game environments</p>
+        <h1>Teaching an agent to play 2048.</h1>
+        <p class="lede">An end-to-end actor–critic project: implement the game, design a spatial representation of the board, train policy and value networks, and watch the learned agent reach the 2048 tile.</p>
+        <ul class="project-meta" aria-label="Project technologies">
+          <li>TensorFlow / Keras</li><li>Advantage actor–critic</li><li>Convolutional networks</li><li>Custom environment</li><li>Pygame</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="problem">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Why 2048?</p>
+          <h2>Every move changes what will be possible later.</h2>
+        </div>
+        <div class="body-copy">
+          <p>2048 has only four actions—left, right, up, and down—but choosing well requires more than collecting the largest immediate merge. A move rearranges the whole board, a new tile appears at random, and a locally rewarding choice can destroy the structure needed to survive many turns later.</p>
+          <p>That makes the game a compact reinforcement-learning problem. The agent must learn a policy under randomness, delayed consequences, a changing set of legal moves, and an enormous number of possible board configurations.</p>
+          <div class="formula">board → action → merge reward + new random tile</div>
+          <p>The project begins below the learning algorithm: it implements the game rules, transition function, rewards, terminal condition, and feature encodings from scratch.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="agent">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">The learning system</p>
+          <h2>One network chooses. Another judges.</h2>
+          <p>The agent uses an advantage actor–critic design. Its policy learns which direction to move; its value model estimates how promising the current board is.</p>
+        </div>
+        <div class="architecture">
+          <div class="arch-row"><span>State</span><p>Each tile is encoded by its power of two, producing an 11-channel 4×4 representation that preserves the board’s spatial structure.</p></div>
+          <div class="arch-row"><span>Policy</span><p>A convolutional network outputs probabilities for the four directions and samples the agent’s next action.</p></div>
+          <div class="arch-row"><span>Value</span><p>A second convolutional network predicts return and supplies the advantage signal used to improve the policy.</p></div>
+          <div class="arch-row"><span>Mask</span><p>Moves that leave the board unchanged receive effectively zero probability, so the agent samples only valid actions.</p></div>
+          <div class="arch-row"><span>Reward</span><p>Merged tile values provide the learning signal, aligning return with the familiar score accumulated during a game.</p></div>
+          <div class="arch-row"><span>Models</span><p>Policy and value networks are saved independently, allowing trained checkpoints to be evaluated and visualized later.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Training trace</p><h2>Learning is noisy, so the trend matters.</h2></div>
+          <p>Individual games vary because new tiles appear randomly. The recorded experiment plots episode reward together with a 50-episode rolling mean, making longer-term improvement easier to distinguish from lucky or unlucky games.</p>
+        </div>
+        <figure class="animation-frame">
+          <img src="reinforcement-learning/artifacts/learning_curve.png" alt="Training curve for the 2048 reinforcement-learning agent">
+          <figcaption><strong>Exploratory training history.</strong> Raw game rewards are shown alongside their rolling average. This is evidence that the implementation learned useful behavior during the run, not a controlled comparison against other 2048 agents.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" id="results">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Learned behavior</p><h2>The agent reaches 2048.</h2></div>
+          <p>A saved policy was loaded into a Pygame visualizer and allowed to play complete games. The recording below follows one such run through the creation of the 2048 tile.</p>
+        </div>
+        <div class="rl-results">
+          <figure class="animation-frame rl-video">
+            <video autoplay muted loop playsinline controls preload="metadata">
+              <source src="reinforcement-learning/artifacts/agent_2048_4x.mp4" type="video/mp4">
+              Your browser does not support embedded MP4 video.
+            </video>
+            <figcaption><strong>A complete successful game.</strong> The original 4 minute 54 second recording is presented at 4× speed. No part of the run was trimmed.</figcaption>
+          </figure>
+          <figure class="animation-frame rl-board">
+            <img src="reinforcement-learning/artifacts/2048_score.jpg" alt="Final 2048 board produced by the trained agent">
+            <figcaption><strong>The terminal milestone.</strong> A captured board from the trained policy’s successful 2048 run.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Broader workspace</p>
+          <h2>From fundamentals to applied agents.</h2>
+        </div>
+        <div class="body-copy">
+          <p>The repository also contains CartPole actor–critic implementations, neural-network components written from scratch, a digit classifier, and experimental trading environments. Together they document a progression from implementing the mechanics of neural networks and RL algorithms to assembling complete agents with modern frameworks.</p>
+          <p>The 2048 agent is the clearest case study because the environment, representation, learning rule, saved models, and visible outcome all live in one project.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/DaniilKardava/ReinforcementLearning">Explore the source</a>
+            <a class="button secondary" href="../">Back to all projects</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner site-shell">
+      <span>© <span data-year></span> Daniil Kardava</span>
+      <span>Exploratory reinforcement-learning work · Summer 2023</span>
+    </div>
+  </footer>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

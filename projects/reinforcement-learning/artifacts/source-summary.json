@@ -1,0 +1,34 @@
+{
+  "source_repository": "DaniilKardava/ReinforcementLearning",
+  "source_revision": "0bf6a0f0c7c269d6b9bbb91c487b5ff66f059592",
+  "focus": "2048-Keras",
+  "environment": {
+    "board_shape": [4, 4],
+    "actions": ["right", "left", "up", "down"],
+    "tile_spawn_probability": {
+      "2": 0.9,
+      "4": 0.1
+    },
+    "state_encoding": "4x4x11 one-hot channels for tile powers",
+    "invalid_action_masking": true
+  },
+  "agent": {
+    "algorithm": "advantage actor-critic",
+    "networks": ["policy", "value"],
+    "convolution_filters": [128, 64],
+    "dense_units": 256,
+    "training_episode_limit": 20000,
+    "training_curve_window": 50
+  },
+  "portfolio_media": {
+    "training_curve": "learning_curve.png",
+    "successful_board": "2048_score.jpg",
+    "recorded_game": {
+      "file": "agent_2048_4x.mp4",
+      "original_duration_seconds": 294,
+      "display_duration_seconds": 73.4,
+      "speed_multiplier": 4,
+      "trimmed": false
+    }
+  }
+}
