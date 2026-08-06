@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A scalable statewise POD-Galerkin method for computing thousands of quantum eigenstates.">
+  <title>Scalable POD-Galerkin Quantum Simulation — Daniil Kardava</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav site-shell" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
+      <div class="nav-links">
+        <a href="#context">Context</a>
+        <a href="#method">Method</a>
+        <a href="#scaling">Scaling</a>
+        <a href="#accuracy">Accuracy</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="project-hero pod-hero">
+      <div class="site-shell">
+        <p class="eyebrow">Model-order reduction · Quantum simulation · Eigensolvers</p>
+        <h1>Scaling quantum reduced-order models to thousands of states.</h1>
+        <p class="lede">A new statewise POD-Galerkin workflow designed for quantum problems where one or two low-energy states are not enough—and computing a large portion of the spectrum is the real task.</p>
+        <ul class="project-meta" aria-label="Project technologies">
+          <li>Python / C++</li><li>POD-Galerkin</li><li>Statewise bases</li><li>Constrained eigensolvers</li><li>HPC benchmarks</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="context">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Research context</p>
+          <h2>Learn a smaller space without discarding the physics.</h2>
+          <div class="paper-links">
+            <a href="https://arxiv.org/abs/2003.00879"><span>Earlier Clarkson work</span><strong>Quantum Element Method ↗</strong></a>
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10326499/"><span>Workflow overview</span><strong>Physics-driven POD-Galerkin ↗</strong></a>
+          </div>
+        </div>
+        <div class="body-copy">
+          <p>Solving the Schrödinger equation on a fine spatial grid produces a large matrix eigenvalue problem. Direct numerical simulation is accurate, but repeating that solve for many device configurations can be expensive.</p>
+          <p>Clarkson’s POD-Galerkin workflow replaces the full grid with a basis learned from previously computed wavefunctions. Proper orthogonal decomposition identifies recurring spatial patterns in those training solutions; Galerkin projection then expresses the Schrödinger operator inside that much smaller space.</p>
+          <div class="formula">full spatial problem → learned POD basis → reduced Hamiltonian</div>
+          <p>The approach remains physics-guided: data chooses a compact basis, but the governing Hamiltonian determines the reduced eigenproblem. Earlier work by Ming-Cheng Cheng and collaborators demonstrated this idea for quantum wells and element-based nanostructures.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Example states</p><h2>What the solver is trying to preserve.</h2></div>
+          <p>Each eigenstate is a signed spatial wavefunction. Higher states develop more nodes and finer structure, so a reduced model must preserve an increasingly diverse family of patterns—not merely approximate the ground state.</p>
+        </div>
+        <figure class="animation-frame">
+          <img src="pod-galerkin/artifacts/gaussian_eigenstates_1_12.png" alt="Heatmaps of the first twelve quantum eigenstates from a Gaussian quantum-well example">
+          <figcaption><strong>The first twelve states of a Gaussian quantum-well sample.</strong> Red and blue indicate opposite signs of the wavefunction. The growing spatial complexity helps explain why a single compact basis becomes harder to use as the requested spectrum expands.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" id="method">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">My contribution</p>
+          <h2>Replace one growing global solve with a sequence of local ones.</h2>
+          <p>The traditional workflow collects all retained POD modes into one global reduced Hamiltonian. Requesting more eigenstates therefore enlarges one dense matrix whose diagonalization becomes progressively more expensive.</p>
+        </div>
+        <div class="architecture">
+          <div class="arch-row"><span>Separate</span><p>Build a dedicated POD basis Φ<sub>j</sub> from the training snapshots associated with eigenstate family j.</p></div>
+          <div class="arch-row"><span>Stream</span><p>Solve states sequentially rather than diagonalizing one reduced matrix large enough to contain the full requested spectrum.</p></div>
+          <div class="arch-row"><span>Constrain</span><p>For state j, construct a coefficient-space nullspace that enforces orthogonality to all wavefunctions already accepted.</p></div>
+          <div class="arch-row"><span>Reduce</span><p>Diagonalize the constrained Hamiltonian inside the current state’s small POD space and keep its lowest Ritz pair.</p></div>
+          <div class="arch-row"><span>Track</span><p>Use overlap, residual, ordering, and ambiguity diagnostics to keep nearby or nearly degenerate states aligned.</p></div>
+          <div class="arch-row"><span>Scale</span><p>Keep the expensive Hamiltonian work local while the requested number of eigenstates grows into the thousands.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="scaling">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Scaling evidence</p><h2>The growth rate bends in the right direction.</h2></div>
+          <p>In the current benchmark, the global dense solver remains faster in absolute time at 3,000 states. Its cost, however, grows much more steeply: the measured edge exponent rises above 2, while the statewise sequential method stays near 1.1–1.3 through the tested high-state regime.</p>
+        </div>
+        <figure class="animation-frame">
+          <img src="pod-galerkin/artifacts/local_vs_global_scaling.png" alt="Log-log timing comparison between global dense and local sequential POD-Galerkin solves">
+          <figcaption><strong>Online solve time versus requested eigenpairs.</strong> Numbers on the line segments are empirical local power-law exponents. The global solve reaches exponents of 2.39–2.56 at its largest tested sizes; the sequential method measures 1.12–1.33 from 800 to 3,000 states. This supports better asymptotic scaling, while not yet establishing a measured crossover in wall-clock time.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" id="accuracy">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Accuracy milestone</p><h2>Thousands of states, checked against DNS.</h2></div>
+          <p>A 3,000-state run on a 5×5 square quantum-well system was compared state by state with direct numerical simulation. The clean validation scope includes states 1–2990; a matching disagreement begins at state 2991, so the final ten states are intentionally excluded below.</p>
+        </div>
+        <div class="metric-grid pod-metrics" aria-label="Accuracy summary through state 2990">
+          <div class="metric"><strong>2,990</strong><span>states in the clean<br>validation scope</span></div>
+          <div class="metric"><strong>3.44×10<sup>−7</sup></strong><span>median absolute<br>energy error</span></div>
+          <div class="metric"><strong>0.999986</strong><span>median absolute<br>DNS overlap</span></div>
+          <div class="metric"><strong>0.9971</strong><span>minimum overlap<br>within scope</span></div>
+        </div>
+        <div class="pod-evidence-grid">
+          <figure class="animation-frame">
+            <img src="pod-galerkin/artifacts/spectrum_agreement_2990.png" alt="Agreement between POD-Galerkin and direct numerical simulation spectra through state 2990">
+            <figcaption><strong>Spectrum agreement.</strong> The statewise reduced solution follows the DNS energy spectrum through the validated portion of the run.</figcaption>
+          </figure>
+          <figure class="animation-frame">
+            <img src="pod-galerkin/artifacts/relative_eigenvalue_error_2990.png" alt="Relative eigenvalue error through state 2990">
+            <figcaption><strong>Eigenvalue error by state.</strong> A state-resolved view makes local loss of accuracy visible instead of hiding it inside one aggregate number.</figcaption>
+          </figure>
+        </div>
+        <p class="caption pod-caveat"><strong>Current status:</strong> these are research-development benchmarks, not a finalized performance study. The scaling comparison and 5×5 accuracy run use preserved server outputs with their validated plotting scope.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="site-shell split">
+        <div><p class="eyebrow">What comes next</p><h2>Turn improved scaling into a robust solver.</h2></div>
+        <div class="body-copy">
+          <p>The next work is concentrated at the difficult end of the spectrum: improving state tracking near ambiguous and nearly degenerate eigenpairs, reducing the remaining selection cost, and extending matched DNS validation cleanly through all 3,000 requested states.</p>
+          <p>The core result is already visible: organizing the reduced model around individual state families changes how the online solve scales, creating a viable path toward quantum calculations that require many eigenstates.</p>
+          <div class="status-note">
+            <span class="status-dot" aria-hidden="true"></span>
+            <p><strong>Active research:</strong> source code and full server artifacts are currently maintained in a private research repository.</p>
+          </div>
+          <div class="hero-actions"><a class="button secondary" href="../">Back to all projects</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner site-shell">
+      <span>© <span data-year></span> Daniil Kardava</span>
+      <span>Reduced-order quantum simulation · research in progress</span>
+    </div>
+  </footer>
+  <script src="../assets/site.js"></script>
+</body>
+</html>
