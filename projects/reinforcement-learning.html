@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Two actor–critic projects for 2048: one neural-network stack built from scratch and one implemented with TensorFlow and Keras.">
   <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-4">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-5">
 </head>
 <body>
   <header class="site-header">
@@ -164,40 +164,118 @@
     <section class="section scratch-section" id="scratch">
       <div class="site-shell">
         <div class="section-heading">
-          <div><p class="eyebrow">From scratch</p><h2>The first version builds the machinery, not just the agent.</h2></div>
-          <p>NumPy and SciPy provide arrays and numerical primitives, but the environment, neural-network layers, gradients, optimizers, and actor–critic update are implemented directly.</p>
+          <div><p class="eyebrow">From scratch · inside the implementation</p><h2>Four layers of work beneath the agent.</h2></div>
+          <p>The scratch version is more than a hand-written training loop. It follows one move through spatial computation, a reusable layer system, two explicit learning gradients, and a stateful optimizer.</p>
         </div>
-        <div class="scratch-build-map">
-          <span class="diagram-label">Scratch architecture · implemented layer by layer</span>
-          <p>The scratch actor and critic are also separate. Each is assembled by the custom <code>Network</code>, <code>ConvPoolLayer</code>, and <code>Dense</code> classes.</p>
-          <div class="scratch-pipeline" aria-label="Scratch network architecture">
-            <strong>11×4×4 board</strong><i>→</i><strong>Conv 20</strong><i>→</i><strong>Conv 20</strong><i>→</i><strong>Dense 64</strong><i>→</i><strong>Dense 64</strong><i>→</i><strong>Dense 64</strong><i>→</i><strong>policy: 4 / value: 1</strong>
-          </div>
-          <div class="implementation-boundary">
-            <p><strong>Numerical primitives:</strong> NumPy stores tensors and SciPy performs 2D correlation and convolution.</p>
-            <p><strong>Implemented here:</strong> layer construction, shape propagation, activations, forward passes, backward passes, parameter gradients, He initialization, SGD, Adam, masking, and actor–critic training.</p>
-          </div>
-        </div>
-        <div class="scratch-grid">
-          <article>
-            <span>01 · Environment</span>
-            <h3>Make 2048 a learning problem.</h3>
-            <p>I implemented board movement and merging, random tile generation, rewards, terminal states, valid-action checks, and an 11-channel encoding of the 4×4 board.</p>
+
+        <div class="scratch-story">
+          <article class="story-chapter">
+            <header class="story-header">
+              <span>01 · Convolutional backpropagation</span>
+              <h3>A board moves forward. A gradient moves backward.</h3>
+              <p>Both scratch networks transform an 11-channel board with custom convolutional and dense layers. Training reverses that entire path to recover input, kernel, weight, and bias gradients.</p>
+            </header>
+            <div class="story-visual tensor-story">
+              <span class="pass-label">Forward pass →</span>
+              <div class="tensor-pipeline">
+                <div class="flow-box input"><small>Board</small><strong>11×4×4</strong><em>tile channels</em></div><i>→</i>
+                <div class="flow-box"><small>Conv 2×2</small><strong>20×3×3</strong><em>feature maps</em></div><i>→</i>
+                <div class="flow-box"><small>Conv 2×2</small><strong>20×2×2</strong><em>feature maps</em></div><i>→</i>
+                <div class="flow-box"><small>Flatten</small><strong>80</strong><em>features</em></div><i>→</i>
+                <div class="flow-box"><small>Dense stack</small><strong>64 → 64 → 64</strong><em>hidden units</em></div><i>→</i>
+                <div class="flow-box output"><small>Output</small><strong>4 or 1</strong><em>policy / value</em></div>
+              </div>
+              <div class="backward-ribbon"><strong>← Backpropagation</strong><span>loss derivative → dense errors → reshaped feature-map errors → convolutional kernel gradients → earlier layers</span></div>
+              <div class="technical-callouts">
+                <span><strong>Forward convolution</strong>Channel-wise 2D correlation</span>
+                <span><strong>Layer error</strong>Downstream error propagated through weights</span>
+                <span><strong>Kernel gradient</strong>Correlation of layer input with local error</span>
+                <span><strong>Dense gradient</strong>Outer product of error and prior activation</span>
+              </div>
+            </div>
           </article>
-          <article>
-            <span>02 · Network layers</span>
-            <h3>Build forward passes from arrays.</h3>
-            <p>Custom convolutional and dense layers turn the encoded board into learned features, with explicit activation functions, derivatives, and weight initialization.</p>
+
+          <article class="story-chapter">
+            <header class="story-header">
+              <span>02 · Reusable framework</span>
+              <h3>One interface connects every layer.</h3>
+              <p>The network is assembled from objects rather than hard-coded equations. A shared lifecycle lets convolutional, dense, and output layers participate in the same forward and backward traversal.</p>
+            </header>
+            <div class="story-visual framework-story">
+              <div class="framework-map">
+                <div class="network-core"><small>Coordinator</small><strong>Network</strong><span>build · forward · backward · train</span></div>
+                <div class="framework-connector" aria-hidden="true">↓</div>
+                <div class="layer-family">
+                  <div><small>Spatial</small><strong>ConvPoolLayer</strong></div>
+                  <div><small>Vector</small><strong>Dense</strong></div>
+                  <div><small>Objective</small><strong>Output layer</strong></div>
+                </div>
+              </div>
+              <div class="lifecycle-strip">
+                <code>build_network(shape)</code><i>→</i><code>forward(x)</code><i>→</i><code>backward(error)</code><i>→</i><code>calculate_deltas()</code><i>→</i><code>update_weights()</code>
+              </div>
+              <div class="implementation-boundary">
+                <p><strong>Numerical primitives</strong>NumPy stores tensors; SciPy supplies 2D correlation and convolution.</p>
+                <p><strong>Implemented directly</strong>Shape propagation, activations, forward passes, backpropagation, parameter gradients, losses, and updates.</p>
+              </div>
+            </div>
           </article>
-          <article>
-            <span>03 · Backpropagation</span>
-            <h3>Carry the learning signal backward.</h3>
-            <p>Each layer computes its own parameter and input gradients. The implementation includes both SGD and Adam updates rather than relying on automatic differentiation.</p>
+
+          <article class="story-chapter">
+            <header class="story-header">
+              <span>03 · Explicit actor–critic gradients</span>
+              <h3>One transition creates two different derivatives.</h3>
+              <p>The advantage is computed outside either network and converted into two output-gradient functions. The generic backpropagator then carries each derivative through the appropriate model.</p>
+            </header>
+            <div class="story-visual gradient-story">
+              <div class="transition-trace">
+                <div><small>Current state</small><strong>s<sub>t</sub></strong></div><i>→</i>
+                <div><small>Actor samples</small><strong>a<sub>t</sub></strong></div><i>→</i>
+                <div><small>Environment</small><strong>r<sub>t</sub>, s<sub>t+1</sub></strong></div><i>→</i>
+                <div class="advantage-node"><small>Critic comparison</small><strong>A<sub>t</sub></strong></div>
+              </div>
+              <div class="loss-split">
+                <div class="loss-card critic-loss">
+                  <span>Critic derivative</span>
+                  <strong>∂L<sub>V</sub>/∂V = −A<sub>t</sub></strong>
+                  <code>lambda y: -advantage</code>
+                  <p>Push the current value estimate toward the bootstrapped target.</p>
+                </div>
+                <div class="loss-bridge" aria-hidden="true">A<sub>t</sub><br>↙ &nbsp; ↘</div>
+                <div class="loss-card actor-loss">
+                  <span>Actor derivative</span>
+                  <strong>∂L<sub>π</sub>/∂π(a<sub>t</sub>) = −γ<sup>t</sup>A<sub>t</sub>/π(a<sub>t</sub>)</strong>
+                  <code>lambda y: -(gamma ** steps) * advantage / y</code>
+                  <p>Select the sampled action’s softmax-Jacobian row and reinforce or suppress it.</p>
+                </div>
+              </div>
+              <p class="story-takeaway"><strong>No parameters are shared.</strong> The advantage is the scalar interface between the critic’s expectation and the actor’s action probability. In this run, γ = 1.</p>
+            </div>
           </article>
-          <article>
-            <span>04 · Actor–critic</span>
-            <h3>Connect prediction to control.</h3>
-            <p>The policy samples among valid moves, the value model estimates future return, and their difference supplies the advantage used to update both networks.</p>
+
+          <article class="story-chapter">
+            <header class="story-header">
+              <span>04 · Optimizer state</span>
+              <h3>Adam turns each gradient into an adaptive update.</h3>
+              <p>Every trainable layer owns separate optimizer state for its weights and biases. Adam remembers both the direction and recent scale of their gradients.</p>
+            </header>
+            <div class="story-visual adam-story">
+              <div class="adam-flow">
+                <div class="gradient-node"><small>Current gradient</small><strong>g<sub>t</sub></strong></div>
+                <div class="adam-branches">
+                  <div><small>First moment</small><strong>m<sub>t</sub> = β₁m<sub>t−1</sub> + (1−β₁)g<sub>t</sub></strong><span>direction</span></div>
+                  <div><small>Second moment</small><strong>v<sub>t</sub> = β₂v<sub>t−1</sub> + (1−β₂)g<sub>t</sub><sup>2</sup></strong><span>scale</span></div>
+                </div>
+                <div class="framework-connector" aria-hidden="true">↓</div>
+                <div class="adam-update"><small>Bias-correct and scale</small><strong>θ<sub>t+1</sub> = θ<sub>t</sub> − α m̂<sub>t</sub> / (√v̂<sub>t</sub> + ε)</strong></div>
+              </div>
+              <div class="optimizer-notes">
+                <span>Separate moments for weights</span>
+                <span>Separate moments for biases</span>
+                <span>Bias correction advances each step</span>
+                <span>SGD remains interchangeable</span>
+              </div>
+            </div>
           </article>
         </div>
       </div>
