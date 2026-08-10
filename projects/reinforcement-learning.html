@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Two actor–critic projects for 2048: one neural-network stack built from scratch and one implemented with TensorFlow and Keras.">
   <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-3">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-4">
 </head>
 <body>
   <header class="site-header">
@@ -13,9 +13,9 @@
       <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
       <div class="nav-links">
         <a href="#problem">Problem</a>
+        <a href="#agent">Architecture</a>
         <a href="#implementations">Two builds</a>
         <a href="#scratch">From scratch</a>
-        <a href="#agent">Architecture</a>
         <a href="https://github.com/DaniilKardava/ReinforcementLearning">Source ↗</a>
       </div>
     </nav>
@@ -43,13 +43,98 @@
           <p>2048 has only four actions—left, right, up, and down—but choosing well requires more than collecting the largest immediate merge. A move rearranges the whole board, a new tile appears at random, and a locally rewarding choice can destroy the structure needed to survive many turns later.</p>
           <p>That makes the game a compact reinforcement-learning problem. The agent must learn a policy under randomness, delayed consequences, a changing set of legal moves, and an enormous number of possible board configurations.</p>
           <figure class="animation-frame rl-preview">
-            <video autoplay muted loop playsinline preload="metadata" data-loop-start="18" data-loop-end="30" aria-label="Short excerpt of the trained 2048 agent playing the game">
+            <video autoplay muted loop playsinline preload="metadata" data-loop-start="18" data-loop-end="30" data-playback-rate="0.5" aria-label="Short excerpt of the trained 2048 agent playing the game">
               <source src="reinforcement-learning/artifacts/agent_2048_4x.mp4#t=18" type="video/mp4">
               Your browser does not support embedded MP4 video.
             </video>
-            <figcaption><strong>A trained policy in motion.</strong> This short loop shows how every action reorganizes the board before a new random tile appears.</figcaption>
+            <figcaption><strong>A trained policy in motion.</strong> This excerpt now plays at half the previous speed—effectively 2× the original recording—so each board transition is easier to follow.</figcaption>
           </figure>
           <p>The project begins below the learning algorithm: it implements the game rules, transition function, rewards, terminal condition, and feature encodings from scratch.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section agent-system" id="agent">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Architecture and learning loop</p><h2>From board state to action—and back to an update.</h2></div>
+          <p>Both implementations use the same advantage actor–critic design. The diagram separates the neural-network architecture from the feedback loop that trains it.</p>
+        </div>
+
+        <div class="rl-system-diagram" aria-label="Actor–critic network architecture and reinforcement-learning loop">
+          <div class="network-panel">
+            <span class="diagram-label">Library architecture · separate networks</span>
+            <p class="diagram-context">The Keras actor and critic receive the same board tensor but each owns its own Conv2D(128) → Conv2D(64) → Dense(256) parameters.</p>
+            <div class="network-input diagram-node input-node"><small>Observation</small><strong>4×4×11 encoded board</strong><span>the same state is sent to two separate networks</span></div>
+            <div class="network-split" aria-hidden="true">↙ separate weights ↘</div>
+            <div class="network-parallel">
+              <div class="network-lane policy-lane">
+                <span class="lane-label">Actor · policy network</span>
+                <div class="lane-flow">
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>64 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Dense</small><strong>256 units</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node policy-node"><small>Masked softmax</small><strong>4 moves</strong></div>
+                </div>
+              </div>
+              <div class="network-lane value-lane">
+                <span class="lane-label">Critic · value network</span>
+                <div class="lane-flow">
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>64 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Dense</small><strong>256 units</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node value-node"><small>Scalar output</small><strong>V(state)</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="loop-panel">
+            <span class="diagram-label">One transition, two updates</span>
+            <p class="diagram-context">A single move produces the data used to train both networks. The scratch experiment uses γ = 1, so future value is not discounted.</p>
+            <div class="learning-loop">
+              <div class="loop-step"><strong>1</strong><span>Encode current board s<sub>t</sub></span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>2</strong><span>Actor samples valid action a<sub>t</sub></span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>3</strong><span>Environment returns r<sub>t</sub>, s<sub>t+1</sub></span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>4</strong><span>Critic evaluates both states</span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>5</strong><span>Compute advantage A<sub>t</sub></span></div>
+            </div>
+            <div class="advantage-formula">
+              <span>nonterminal</span><strong>A<sub>t</sub> = r<sub>t</sub> + γV(s<sub>t+1</sub>) − V(s<sub>t</sub>)</strong>
+              <span>terminal</span><strong>A<sub>t</sub> = r<sub>t</sub> − V(s<sub>t</sub>)</strong>
+            </div>
+            <div class="update-paths">
+              <article>
+                <span>Critic update</span>
+                <strong>L<sub>V</sub> = ½ A<sub>t</sub><sup>2</sup></strong>
+                <p>Treat the bootstrapped target as fixed and move V(s<sub>t</sub>) toward it. This improves the baseline used to judge later actions.</p>
+              </article>
+              <article>
+                <span>Actor update</span>
+                <strong>L<sub>π</sub> = −A<sub>t</sub> log π(a<sub>t</sub> | s<sub>t</sub>)</strong>
+                <p>Positive advantage reinforces the sampled action; negative advantage suppresses it. Only the chosen action’s log-probability enters this update.</p>
+              </article>
+            </div>
+            <div class="loop-return"><span>No weights are shared between actor and critic.</span><strong>Advantage A<sub>t</sub> is the bridge: critic supplies the baseline; actor uses the verdict.</strong></div>
+          </div>
+        </div>
+
+        <div class="architecture diagram-notes">
+          <div class="arch-row"><span>State + mask</span><p>The 11×4×4 tensor represents the board. Before softmax, logits for moves that do not change the grid are set to negative infinity, so invalid actions receive zero probability.</p></div>
+          <div class="arch-row"><span>Transition</span><p>The environment moves and merges tiles, prevents a tile from merging twice in one move, sums the newly created tile values as reward, and spawns a 2 with probability 0.9 or a 4 with probability 0.1.</p></div>
+          <div class="arch-row"><span>Critic</span><p>For a nonterminal move, reward plus the next-state value becomes the target. At the terminal state there is no bootstrap term. The value gradient is proportional to −A<sub>t</sub>.</p></div>
+          <div class="arch-row"><span>Actor</span><p>The policy gradient is proportional to −A<sub>t</sub>/π(a<sub>t</sub>|s<sub>t</sub>) before the softmax Jacobian is applied. This is the derivative of the negative advantage-weighted log-probability.</p></div>
+          <div class="arch-row"><span>Together</span><p>The critic learns what return to expect; the actor learns which action beats that expectation. As the actor changes the visited states, the critic must continually update its baseline on the new experience.</p></div>
         </div>
       </div>
     </section>
@@ -82,6 +167,17 @@
           <div><p class="eyebrow">From scratch</p><h2>The first version builds the machinery, not just the agent.</h2></div>
           <p>NumPy and SciPy provide arrays and numerical primitives, but the environment, neural-network layers, gradients, optimizers, and actor–critic update are implemented directly.</p>
         </div>
+        <div class="scratch-build-map">
+          <span class="diagram-label">Scratch architecture · implemented layer by layer</span>
+          <p>The scratch actor and critic are also separate. Each is assembled by the custom <code>Network</code>, <code>ConvPoolLayer</code>, and <code>Dense</code> classes.</p>
+          <div class="scratch-pipeline" aria-label="Scratch network architecture">
+            <strong>11×4×4 board</strong><i>→</i><strong>Conv 20</strong><i>→</i><strong>Conv 20</strong><i>→</i><strong>Dense 64</strong><i>→</i><strong>Dense 64</strong><i>→</i><strong>Dense 64</strong><i>→</i><strong>policy: 4 / value: 1</strong>
+          </div>
+          <div class="implementation-boundary">
+            <p><strong>Numerical primitives:</strong> NumPy stores tensors and SciPy performs 2D correlation and convolution.</p>
+            <p><strong>Implemented here:</strong> layer construction, shape propagation, activations, forward passes, backward passes, parameter gradients, He initialization, SGD, Adam, masking, and actor–critic training.</p>
+          </div>
+        </div>
         <div class="scratch-grid">
           <article>
             <span>01 · Environment</span>
@@ -106,70 +202,6 @@
         </div>
       </div>
     </section>
-    <section class="section agent-system" id="agent">
-      <div class="site-shell">
-        <div class="section-heading">
-          <div><p class="eyebrow">Architecture and learning loop</p><h2>From board state to action—and back to an update.</h2></div>
-          <p>Both implementations use the same advantage actor–critic design. The diagram separates the neural-network architecture from the feedback loop that trains it.</p>
-        </div>
-
-        <div class="rl-system-diagram" aria-label="Actor–critic network architecture and reinforcement-learning loop">
-          <div class="network-panel">
-            <span class="diagram-label">Network architecture</span>
-            <div class="network-input diagram-node input-node"><small>Observation</small><strong>4×4×11 encoded board</strong><span>the same state is sent to two separate networks</span></div>
-            <div class="network-split" aria-hidden="true">↙ separate weights ↘</div>
-            <div class="network-parallel">
-              <div class="network-lane policy-lane">
-                <span class="lane-label">Actor · policy network</span>
-                <div class="lane-flow">
-                  <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
-                  <div class="flow-arrow" aria-hidden="true">→</div>
-                  <div class="diagram-node"><small>Conv 2×2</small><strong>64 filters</strong></div>
-                  <div class="flow-arrow" aria-hidden="true">→</div>
-                  <div class="diagram-node"><small>Dense</small><strong>256 units</strong></div>
-                  <div class="flow-arrow" aria-hidden="true">→</div>
-                  <div class="diagram-node policy-node"><small>Masked softmax</small><strong>4 moves</strong></div>
-                </div>
-              </div>
-              <div class="network-lane value-lane">
-                <span class="lane-label">Critic · value network</span>
-                <div class="lane-flow">
-                  <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
-                  <div class="flow-arrow" aria-hidden="true">→</div>
-                  <div class="diagram-node"><small>Conv 2×2</small><strong>64 filters</strong></div>
-                  <div class="flow-arrow" aria-hidden="true">→</div>
-                  <div class="diagram-node"><small>Dense</small><strong>256 units</strong></div>
-                  <div class="flow-arrow" aria-hidden="true">→</div>
-                  <div class="diagram-node value-node"><small>Scalar output</small><strong>V(state)</strong></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="loop-panel">
-            <span class="diagram-label">Reinforcement-learning loop</span>
-            <div class="learning-loop">
-              <div class="loop-step"><strong>1</strong><span>Observe board</span></div>
-              <div class="loop-arrow" aria-hidden="true">→</div>
-              <div class="loop-step"><strong>2</strong><span>Sample valid move</span></div>
-              <div class="loop-arrow" aria-hidden="true">→</div>
-              <div class="loop-step"><strong>3</strong><span>Merge and spawn tile</span></div>
-              <div class="loop-arrow" aria-hidden="true">→</div>
-              <div class="loop-step"><strong>4</strong><span>Receive reward</span></div>
-            </div>
-            <div class="loop-return"><span>advantage = reward + γV(next state) − V(state)</span><strong>↺ update policy and value networks</strong></div>
-          </div>
-        </div>
-
-        <div class="architecture diagram-notes">
-          <div class="arch-row"><span>Representation</span><p>Each tile becomes one of 11 channels in a 4×4 tensor. The actor and critic receive the same representation but process it through separate convolutional networks with separate weights.</p></div>
-          <div class="arch-row"><span>Policy head</span><p>The actor assigns probabilities to left, right, up, and down. Invalid moves are masked before sampling so the agent only chooses actions that change the board.</p></div>
-          <div class="arch-row"><span>Value head</span><p>The critic estimates the return available from the current state. Comparing that estimate with the observed transition produces the advantage signal.</p></div>
-          <div class="arch-row"><span>Update</span><p>A positive advantage makes the sampled move more likely; a negative advantage makes it less likely. The value network simultaneously learns to make a better prediction.</p></div>
-        </div>
-      </div>
-    </section>
-
     <section class="section" id="results">
       <div class="site-shell">
         <div class="section-heading">
@@ -199,6 +231,6 @@
       <span>Exploratory reinforcement-learning work · Summer 2023</span>
     </div>
   </footer>
-  <script src="../assets/site.js?v=20260810-3"></script>
+  <script src="../assets/site.js?v=20260810-4"></script>
 </body>
 </html>
