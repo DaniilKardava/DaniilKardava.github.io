@@ -210,6 +210,35 @@ p { color: var(--muted); line-height: 1.72; }
 .implementation-boundary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
 .implementation-boundary p { display: grid; gap: 6px; margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: 14px; font-size: 1.02rem; line-height: 1.55; }
 .implementation-boundary strong { color: var(--ink); }
+.gibbs-section { background: #ede7d8; }
+.gibbs-panel { min-width: 0; padding: 30px; overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: #fbfaf5; box-shadow: var(--shadow); }
+.gibbs-target { display: grid; grid-template-columns: .8fr .8fr 1.4fr; gap: 24px; align-items: center; padding: 22px 24px; border-radius: 16px; color: #fff; background: var(--green); }
+.gibbs-target > span { color: var(--yellow); font-size: var(--type-label); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.gibbs-target > strong { font-family: Georgia,serif; font-size: clamp(1.35rem,2.5vw,1.85rem); font-weight: 500; }
+.gibbs-target p { margin: 0; color: rgba(255,255,255,.76); font-size: 1.03rem; line-height: 1.55; }
+.gibbs-cycle { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: stretch; margin-top: 20px; }
+.gibbs-cycle > b { display: grid; place-items: center; color: var(--orange); font-family: Georgia,serif; font-size: 1.7rem; font-weight: 500; }
+.gibbs-target > *, .gibbs-step, .gibbs-conditional, .gibbs-measurement, .gibbs-measurement article { min-width: 0; }
+.gibbs-step { display: grid; align-content: start; padding: 20px; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); }
+.gibbs-step > span { display: grid; width: 32px; height: 32px; place-items: center; margin-bottom: 13px; border-radius: 50%; color: #fff; background: var(--green); font-weight: 800; }
+.gibbs-step strong { font-family: Georgia,serif; font-size: 1.3rem; font-weight: 500; line-height: 1.2; }
+.gibbs-step p { margin: 10px 0 0; color: var(--muted); font-size: 1rem; line-height: 1.55; }
+.gibbs-step.emphasized { border-color: rgba(229,107,63,.42); background: #f8e7dc; }
+.gibbs-step.emphasized > span { background: var(--orange); }
+.gibbs-conditional { margin-top: 20px; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.gibbs-conditional > span, .gibbs-measurement article > span { color: var(--orange); font-size: var(--type-label); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.gibbs-conditional .formula { margin: 17px 0; }
+.gibbs-conditional > p { max-width: 880px; margin: 0 auto; color: var(--muted); font-size: 1rem; line-height: 1.55; text-align: center; }
+.formula .fraction { display: inline-grid; grid-template-rows: auto auto; color: inherit; font-family: inherit; font-size: 1em; font-weight: 500; letter-spacing: 0; vertical-align: middle; }
+.fraction b { padding: 3px 8px; font-family: Georgia,serif; font-size: .72em; font-weight: 500; white-space: nowrap; }
+.fraction b:first-child { border-bottom: 1px solid currentColor; }
+.gibbs-measurement { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 20px; }
+.gibbs-measurement article { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.gibbs-measurement h3 { margin: 10px 0; font-family: Georgia,serif; font-size: 1.6rem; font-weight: 500; }
+.gibbs-measurement p { margin: 0; font-size: 1.04rem; line-height: 1.6; }
+.gibbs-measurement .formula { margin: 15px 0; padding: 16px; font-size: clamp(1.2rem,2.2vw,1.55rem); }
+.gibbs-bridge { margin: 20px 0 0; padding: 19px 21px; border-left: 4px solid var(--orange); color: var(--muted); background: rgba(237,231,216,.6); font-size: 1.05rem; line-height: 1.58; }
+.gibbs-bridge strong { color: var(--ink); }
 .bucket-intro { max-width: 860px; margin: 0 0 24px; font-size: 1.08rem; line-height: 1.65; }
 .bucket-ledger-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .bucket-ledger { width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -374,8 +403,10 @@ p { color: var(--muted); line-height: 1.72; }
   .project-card { min-height: 600px; padding: 28px 76px 86px 28px; }
   .project-card.placeholder { min-height: 250px; }
   .project-card.placeholder h3 { margin-top: 100px; }
-  .story-header, .implementation-boundary, .layer-family, .layer-contracts, .loss-split, .adam-branches, .generic-definitions, .generic-products, .bucket-draw, .sampler-summary, .sampler-complexity { grid-template-columns: 1fr; }
+  .story-header, .implementation-boundary, .layer-family, .layer-contracts, .loss-split, .adam-branches, .generic-definitions, .generic-products, .bucket-draw, .sampler-summary, .sampler-complexity, .gibbs-target, .gibbs-cycle, .gibbs-measurement { grid-template-columns: 1fr; }
   .bucket-draw > b { justify-self: center; transform: rotate(90deg); }
+  .gibbs-cycle > b { justify-self: center; transform: rotate(90deg); }
+  .gibbs-panel { padding: 20px; }
   .given-gradient { grid-template-columns: 1fr; gap: 8px; }
   .given-gradient strong { text-align: left; }
   .track-visual { grid-template-columns: 1fr; }
