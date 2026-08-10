@@ -72,63 +72,61 @@
       <div class="site-shell">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Performance optimization</p>
-            <h2>Profile. Change the data structure. Profile again.</h2>
+            <p class="eyebrow">Efficient dynamic sampling</p>
+            <h2>Every move asks a newly changed distribution for one sample.</h2>
           </div>
-          <p>The Python prototype established correctness, but moving the sampler to C++ was only the beginning. I used VTune to follow the hot path through successive revisions; saved gprof snapshots preserve the call counts. The expensive operation was not evaluating one board: it was repeatedly rebuilding a probability distribution over every possible placement.</p>
+          <p>A Gibbs update removes one ship and redraws its position conditioned on the rest of the board. That sounds like one random choice, but making it requires a probability for every possible placement&mdash;and those probabilities change again as soon as the board changes.</p>
         </div>
 
         <div class="scratch-story">
           <article class="story-chapter">
             <div class="story-header">
-              <span>01 &middot; Find the repeated work</span>
-              <h3>One random draw rebuilt the entire distribution.</h3>
-              <p>The first C++ version stored one Boltzmann weight for each of <em>M</em> candidate placements. Every Gibbs move constructed a new <code>std::discrete_distribution</code>, which normalized the weights and built cumulative sums before returning a single sample. In one preserved pre-redesign profile, that run produced 12,000 calls each to normalization, accumulation, and <code>partial_sum</code>.</p>
+              <span>01 &middot; The repeated request</span>
+              <h3>Turn the current board into one weighted placement.</h3>
+              <p>After removing a ship, the sampler considers all <em>M</em> positions where that ship could fit. Placement <em>i</em> receives energy <em>E</em><sub>i</sub> according to how it overlaps the remaining fleet and weight exp(&minus;&beta;<em>E</em><sub>i</sub>). The program needs one draw from those normalized weights before it can continue to the next Gibbs update.</p>
             </div>
             <div class="story-visual">
-              <span class="pass-label">Original sampling path &middot; O(M) setup for each draw</span>
-              <div class="track-visual" aria-label="Original sampling path">
-                <i>M placement weights</i><b>&rarr;</b><i>Rebuild categorical table</i><b>&rarr;</b><i>Return one placement</i>
+              <span class="pass-label">Information requested for every new sample</span>
+              <div class="track-visual" aria-label="Information requested for every sample">
+                <i>Current board</i><b>&rarr;</b><i>M placement energies and weights</i><b>&rarr;</b><i>One weighted placement</i>
+              </div>
+              <div class="formula" aria-label="Probability of placement i given the board is exponential negative beta energy i divided by the sum of all placement weights">P(i | board) = exp(&minus;&beta;E<sub>i</sub>) / &Sigma;<sub>j</sub> exp(&minus;&beta;E<sub>j</sub>)</div>
+            </div>
+          </article>
+
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>02 &middot; The dynamic-distribution problem</span>
+              <h3>Preprocessing helps only until the weights change.</h3>
+              <p>Efficient sampling from a fixed categorical distribution is well understood: preprocess its weights, then reuse that structure for many draws. Developing an efficient sampler for a dynamic distribution is harder. Here each removal and placement changes the overlap energies of nearby candidates, so a preprocessed table immediately becomes stale. Rebuilding and renormalizing all <em>M</em> weights for every draw gives up the benefit of preprocessing.</p>
+            </div>
+            <div class="story-visual">
+              <span class="pass-label">Why a conventional sampling table is difficult to reuse</span>
+              <div class="track-visual" aria-label="A changing board invalidates a preprocessed sampling table">
+                <i>A ship moves</i><b>&rarr;</b><i>Nearby placement weights change</i><b>&rarr;</b><i>The old table is invalid</i>
               </div>
             </div>
           </article>
 
           <article class="story-chapter">
             <div class="story-header">
-              <span>02 &middot; Adapt Walker's sampling idea</span>
-              <h3>Sample weight classes instead of individual placements.</h3>
-              <p>Walker's method suggested replacing one long weighted choice with smaller uniform choices. Here the distribution changes after every move, but the energy is integer-valued, so thousands of placements share only a small number <em>L</em> of distinct weights. I adapted that idea into a dynamic sampler built from energy buckets rather than repeatedly rebuilding a static table over all <em>M</em> placements.</p>
+              <span>03 &middot; The custom sampler</span>
+              <h3>Maintain a few energy classes instead of rebuilding every placement weight.</h3>
+              <p>The useful structure is that energy is integer-valued. Many placements may exist, but they share only a small number <em>L</em> of distinct energies. Inspired by Walker's approach to decomposing a weighted choice, I grouped placements into buckets <em>B</em><sub>e</sub> by energy. When the board changes, only affected placements move between buckets; the whole distribution is not rebuilt after each Gibbs move.</p>
             </div>
             <div class="story-visual">
-              <span class="pass-label">Bucketed sampling path &middot; L is much smaller than M</span>
-              <div class="track-visual" aria-label="Bucketed sampling path">
-                <i>L energy buckets</i><b>&rarr;</b><i>Choose a bucket by total weight</i><b>&rarr;</b><i>Choose an ID uniformly</i>
+              <span class="pass-label">Two-stage draw &middot; L is much smaller than M</span>
+              <div class="track-visual" aria-label="The bucketed sampler first chooses an energy and then a placement">
+                <i>Energy buckets</i><b>&rarr;</b><i>Choose e using total bucket mass</i><b>&rarr;</b><i>Choose uniformly from B<sub>e</sub></i>
               </div>
-              <div class="formula" aria-label="Probability of choosing energy e is proportional to bucket size times exponential negative beta e">P(E=e) &prop; |B<sub>e</sub>| exp(&minus;&beta;e), &nbsp; P(id | E=e) = 1 / |B<sub>e</sub>|</div>
+              <div class="formula" aria-label="Probability of choosing energy e is proportional to bucket size times exponential negative beta e, then placement probability given e is one over bucket size">P(e) &prop; |B<sub>e</sub>| exp(&minus;&beta;e), &nbsp; P(i | e) = 1 / |B<sub>e</sub>|</div>
               <div class="implementation-boundary">
-                <p><strong>Why it is correct</strong><span>Every placement in bucket <em>B</em><sub>e</sub> has the same weight exp(&minus;&beta;e). Choosing the bucket by its total mass and then choosing uniformly inside it gives each placement exactly that Boltzmann probability.</span></p>
-                <p><strong>Why it is fast</strong><span>The sampler scans <em>L</em> energy levels and then draws from one vector in constant time. A reverse index supports constant-time swap-and-pop moves when a placement changes buckets.</span></p>
+                <p><strong>Update rather than rebuild</strong><span>The moved ship changes only nearby overlap energies. Those affected placements transfer between energy buckets while all other placements stay where they are.</span></p>
+                <p><strong>The original probability is preserved</strong><span>Bucket mass contributes |B<sub>e</sub>| exp(&minus;&beta;e), and the uniform draw contributes 1/|B<sub>e</sub>|. The bucket size cancels, leaving each placement with weight exp(&minus;&beta;e).</span></p>
               </div>
-            </div>
-          </article>
-
-          <article class="story-chapter">
-            <div class="story-header">
-              <span>03 &middot; Follow the hotspot</span>
-              <h3>Each improvement revealed the next bottleneck.</h3>
-              <p>After the categorical table disappeared, profiles shifted into the code that maintained the buckets. The remaining commits form a clear optimization loop: measure a hot path, exploit the sampler's local structure, and measure again.</p>
-            </div>
-            <div class="architecture">
-              <div class="arch-row"><span>Storage</span><p>Removed the tensor dependency, flattened the grid, and passed ship state by reference. The accompanying commit recorded the rewritten implementation as roughly three times faster than the preceding C++ version.</p></div>
-              <div class="arch-row"><span>Deduplication</span><p>Removed an <code>unordered_set</code> from the marginal update path. The recorded 100,000-step benchmark fell from 2.5 to 1.8 seconds&mdash;a 28% reduction.</p></div>
-              <div class="arch-row"><span>Local movement</span><p>Accumulated all energy changes first, then moved each affected placement between buckets once. This eliminated the redundant bucket removals and insertions caused when one placement intersected several changed squares.</p></div>
-              <div class="arch-row"><span>Cached weights</span><p>A saved post-bucket profile exposed about 61.6 million repeated exponential evaluations. Since every bucket shares one weight, the next version cached exp(&minus;&beta;e) once per energy level and removed virtual dispatch from the hot update.</p></div>
-              <div class="arch-row"><span>Memory layout</span><p>Finally, the vectors of buckets were flattened into contiguous storage, reducing indirection while preserving constant-time membership updates through reverse indices.</p></div>
             </div>
           </article>
         </div>
-
-        <p class="caption">This account is reconstructed from the <a href="https://github.com/DaniilKardava/Battleship/commits/main/">commit history</a>, saved gprof snapshots, benchmark notes, and shell history confirming a VTune session on the C++ executable. The original VTune result directory was not committed, so the page reports only measurements that remain recoverable.</p>
       </div>
     </section>
 
