@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A computational study of ship-configuration counting using Gibbs sampling and Boltzmann weights.">
   <title>Counting Ship Configurations — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-7">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-8">
 </head>
 <body>
   <header class="site-header">
@@ -58,69 +58,48 @@
       <div class="site-shell">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Estimating the curve</p>
-            <h2>Redraw one ship at a time, then average the energy.</h2>
+            <p class="eyebrow">Estimating the expectation</p>
+            <h2>Sample boards without knowing the normalizing constant.</h2>
           </div>
-          <p>At a fixed value of &beta;, the sampler does not estimate the count directly. It generates boards from the overlap-penalized distribution and uses their energies to estimate &#120124;<sub>&beta;</sub>[E].</p>
+          <p>At each value of &beta;, we want to estimate &#120124;<sub>&beta;</sub>[E] by sampling boards and averaging their energies.</p>
         </div>
 
         <div class="gibbs-panel">
-          <div class="gibbs-target">
-            <span>The target distribution at fixed &beta;</span>
-            <strong>&pi;<sub>&beta;</sub>(x) &prop; exp(&minus;&beta;E(x))</strong>
-            <p>Low-energy boards are more likely, but overlapping boards are still allowed. Increasing &beta; makes collisions progressively less likely.</p>
+          <div class="gibbs-motivation">
+            <div class="formula" aria-label="Probability of board x at beta equals exponential negative beta energy divided by Z of beta">&pi;<sub>&beta;</sub>(x) = exp(&minus;&beta;E(x)) / Z(&beta;)</div>
+            <div>
+              <p>Drawing a complete board directly would require this normalized probability, but <em>Z</em>(&beta;) is the unknown weighted count we are trying to recover.</p>
+              <p><strong>Gibbs sampling</strong> is an MCMC method that avoids this problem. It redraws one ship conditioned on the current positions of the others; in that smaller conditional distribution, the unknown global <em>Z</em>(&beta;) cancels.</p>
+            </div>
           </div>
 
-          <div class="gibbs-cycle" aria-label="One Gibbs sweep redraws each ship in turn">
+          <div class="gibbs-cycle" aria-label="One Gibbs sweep redraws each ship in turn and then records the energy">
             <article class="gibbs-step">
               <span>1</span>
-              <strong>Remove one ship</strong>
-              <p>Choose a labeled ship <em>j</em> and hold every other ship fixed.</p>
+              <strong>Remove one ship.</strong>
+              <p>Keep the rest of the fleet fixed.</p>
             </article>
             <b aria-hidden="true">&rarr;</b>
             <article class="gibbs-step">
               <span>2</span>
-              <strong>Score its placements</strong>
-              <p>For each possible position <em>s</em>, calculate the resulting overlap energy E(s, x<sub>&minus;j</sub>).</p>
+              <strong>Redraw its placement conditioned on the others.</strong>
+              <p>This is the Gibbs update.</p>
             </article>
             <b aria-hidden="true">&rarr;</b>
-            <article class="gibbs-step emphasized">
+            <article class="gibbs-step">
               <span>3</span>
-              <strong>Reweight and redraw</strong>
-              <p>Choose <em>s</em> with probability proportional to exp(&minus;&beta;E(s, x<sub>&minus;j</sub>)).</p>
+              <strong>Repeat for every ship.</strong>
+              <p>One pass through the fleet is a sweep.</p>
             </article>
             <b aria-hidden="true">&rarr;</b>
             <article class="gibbs-step">
               <span>4</span>
-              <strong>Complete a sweep</strong>
-              <p>Repeat for every ship. One pass through the fleet is one Gibbs sweep.</p>
+              <strong>Record the board&rsquo;s total energy.</strong>
+              <p>Only after the entire fleet has been updated.</p>
             </article>
           </div>
 
-          <div class="gibbs-conditional">
-            <span>The exact conditional draw</span>
-            <div class="formula" aria-label="Probability of placement s conditioned on the other ships equals exponential negative beta energy divided by the sum of those weights over possible placements">
-              P(x<sub>j</sub> = s | x<sub>&minus;j</sub>) =
-              <span class="fraction"><b>exp(&minus;&beta;E(s, x<sub>&minus;j</sub>))</b><b>&Sigma;<sub>s&prime;</sub> exp(&minus;&beta;E(s&prime;, x<sub>&minus;j</sub>))</b></span>
-            </div>
-            <p>Because the other ships do not move during this update, their contribution is identical for every candidate and cancels from the conditional probability.</p>
-          </div>
-
-          <div class="gibbs-measurement">
-            <article>
-              <span>Let the chain settle</span>
-              <h3>Burn in</h3>
-              <p>Several sweeps allow the sampler to move away from its initial board and approach the distribution &pi;<sub>&beta;</sub>. The validation runs restart the board and retain an energy only after this burn-in.</p>
-            </article>
-            <article>
-              <span>Estimate the point on the curve</span>
-              <h3>Average the observed energies</h3>
-              <div class="formula" aria-label="Estimated expected energy at beta equals one over S times the sum of sampled energies">&#120124;&#770;<sub>&beta;</sub>[E] = (1/S) &Sigma;<sub>t=1</sub><sup>S</sup> E(X<sub>t</sub>)</div>
-              <p>Repeating this at a sequence of &beta; values supplies the points used in the numerical integral above.</p>
-            </article>
-          </div>
-
-          <p class="gibbs-bridge"><strong>The remaining challenge is computational:</strong> every ship update needs a draw from a probability distribution that changes with the board. The next section explains how that draw was made efficient.</p>
+          <p class="gibbs-conclusion">After allowing the chain time to settle, we repeat this process to collect energy samples. Their average estimates &#120124;<sub>&beta;</sub>[E]. The next section explains how the repeated conditional redraws were made efficient.</p>
         </div>
       </div>
     </section>
