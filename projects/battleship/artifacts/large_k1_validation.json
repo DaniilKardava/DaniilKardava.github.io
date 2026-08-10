@@ -1,0 +1,34 @@
+{
+  "experiment": "historical_10x10_k1_validation",
+  "provenance": {
+    "source_commit": "a5cd41d013864fe5093dec59b987186e0814a9e2",
+    "source_file": "CVersion/energies.txt",
+    "analysis": "Reconstructed from the archived energy stream using the run dimensions encoded by CVersion/energy_analysis.py"
+  },
+  "model": "ten labeled length-1 ships on a 10x10 board; binary collision energy",
+  "grid_size": 10,
+  "ship_length": 1,
+  "ship_count": 10,
+  "total_configurations": "100000000000000000000",
+  "exact_zero_energy_configurations": "62815650955529472000",
+  "samples_per_beta": 1000,
+  "beta_min": 0.0,
+  "beta_max_inclusive": 9.99,
+  "beta_step": 0.01,
+  "beta_points": 1000,
+  "energy_observations": 1000000,
+  "rectangle_sampled_integral": 0.46496,
+  "exact_log_partition_ratio": 0.46496592452675034,
+  "sampled_zero_energy_estimate": "62816023109636320000",
+  "relative_count_error": 0.000005924544300484058,
+  "five_point_fit": {
+    "sampled_betas": [0.0, 0.5, 1.0, 1.5, 2.0],
+    "sampled_mean_energies": [0.467, 0.282, 0.170, 0.101, 0.070],
+    "model": "alpha * exp(-decay * beta)",
+    "alpha": 0.4661704903163489,
+    "decay": 0.9995569579463314,
+    "analytic_integral": 0.46637711499115864,
+    "relative_integral_error": 0.00303504061258808,
+    "relative_count_error": -0.0014101952033674925
+  }
+}
