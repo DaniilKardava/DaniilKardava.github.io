@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Two actor–critic projects for 2048: one neural-network stack built from scratch and one implemented with TensorFlow and Keras.">
   <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-8">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-9">
 </head>
 <body>
   <header class="site-header">
@@ -113,10 +113,9 @@
           </article>
 
           <article class="story-chapter">
-            <header class="story-header">
+            <header class="story-header compact-story-header">
               <span>02 · Hand-coded backpropagation</span>
               <h3>Each layer knows how to send responsibility backward.</h3>
-              <p>The difficult part was translating the chain rule into tensor operations for three different cases: dense weights, spatial kernels, and the policy or value output.</p>
             </header>
             <div class="story-visual backprop-story">
               <div class="generic-backprop">
@@ -146,74 +145,10 @@
 
                 <div class="induction-copy">
                   <strong>Then repeat the same step one layer earlier.</strong>
-                  <p>The loss provides the first gradient at the output. Layer ℓ uses g<sub>ℓ+1</sub> to calculate its own parameter gradients and g<sub>ℓ</sub>; that returned gradient becomes the input to layer ℓ−1. Repeating this backward is efficient because each intermediate derivative is calculated once and reused.</p>
+                  <p>The difficult part was translating the chain rule into tensor operations for three different cases: dense weights, spatial kernels, and the policy or value output.</p>
                 </div>
               </div>
 
-              <div class="layer-equations">
-                <article class="equation-layer dense-equations">
-                  <header><span>01 · Dense layer</span><strong>Affine map followed by an activation</strong></header>
-                  <div class="variable-list">
-                    <div><strong>x</strong><span>input vector, x<sup>(ℓ)</sup></span></div>
-                    <div><strong>y</strong><span>output vector, x<sup>(ℓ+1)</sup></span></div>
-                    <div><strong>W, b</strong><span>weights and bias, θ<sub>ℓ</sub></span></div>
-                    <div><strong>z</strong><span>value before activation</span></div>
-                    <div><strong>φ</strong><span>activation function</span></div>
-                    <div><strong>g<sub>y</sub></strong><span>incoming gradient, g<sub>ℓ+1</sub></span></div>
-                    <div><strong>δ</strong><span>local gradient ∂L/∂z</span></div>
-                    <div><strong>g<sub>x</sub></strong><span>returned gradient, g<sub>ℓ</sub></span></div>
-                  </div>
-                  <div class="layer-forward"><small>Forward</small><strong>z = Wx + b, &nbsp; y = φ(z)</strong></div>
-                  <div class="equation-grid">
-                    <div><small>Local gradient</small><strong>δ = (∂L/∂y) ⊙ φ′(z)</strong></div>
-                    <div><small>Weight gradient</small><strong>∂L/∂W = δx<sup>T</sup></strong></div>
-                    <div><small>Bias gradient</small><strong>∂L/∂b = δ</strong></div>
-                    <div><small>Return to the preceding layer</small><strong>g<sub>x</sub> = ∂L/∂x = W<sup>T</sup>δ</strong></div>
-                  </div>
-                </article>
-
-                <article class="equation-layer conv-equations">
-                  <header><span>02 · Convolutional layer</span><strong>Spatial correlation followed by an activation</strong></header>
-                  <div class="variable-list">
-                    <div><strong>x<sub>c</sub></strong><span>input channel c</span></div>
-                    <div><strong>y<sub>k</sub></strong><span>output feature map k</span></div>
-                    <div><strong>K<sub>k,c</sub></strong><span>kernel from channel c to map k</span></div>
-                    <div><strong>b<sub>k</sub></strong><span>bias for feature map k</span></div>
-                    <div><strong>z<sub>k</sub></strong><span>map before activation</span></div>
-                    <div><strong>g<sub>k</sub></strong><span>incoming gradient for map k</span></div>
-                    <div><strong>δ<sub>k</sub></strong><span>local gradient ∂L/∂z<sub>k</sub></span></div>
-                    <div><strong>⋆ / *</strong><span>2D correlation / full convolution</span></div>
-                  </div>
-                  <div class="layer-forward"><small>Forward</small><strong>z<sub>k</sub> = Σ<sub>c</sub> x<sub>c</sub> ⋆ K<sub>k,c</sub> + b<sub>k</sub>, &nbsp; y<sub>k</sub> = φ(z<sub>k</sub>)</strong></div>
-                  <div class="equation-grid">
-                    <div><small>Local gradient</small><strong>δ<sub>k</sub> = g<sub>k</sub> ⊙ φ′(z<sub>k</sub>)</strong></div>
-                    <div><small>Kernel gradient</small><strong>∂L/∂K<sub>k,c</sub> = x<sub>c</sub> ⋆ δ<sub>k</sub></strong></div>
-                    <div><small>Bias gradient</small><strong>∂L/∂b<sub>k</sub> = Σ<sub>i,j</sub> δ<sub>k,i,j</sub></strong></div>
-                    <div><small>Return to input channel c</small><strong>∂L/∂x<sub>c</sub> = Σ<sub>k</sub> δ<sub>k</sub> * K<sub>k,c</sub></strong></div>
-                  </div>
-                </article>
-
-                <article class="equation-layer output-equations">
-                  <header><span>03 · Actor / critic output</span><strong>The loss creates the first gradient</strong></header>
-                  <div class="variable-list">
-                    <div><strong>L<sub>π</sub>, L<sub>V</sub></strong><span>policy and value losses</span></div>
-                    <div><strong>z<sub>i</sub></strong><span>actor logit for action i</span></div>
-                    <div><strong>p<sub>i</sub></strong><span>softmax probability of action i</span></div>
-                    <div><strong>a<sub>t</sub></strong><span>action selected at step t</span></div>
-                    <div><strong>A<sub>t</sub></strong><span>advantage of that transition</span></div>
-                    <div><strong>γ</strong><span>discount factor</span></div>
-                    <div><strong>V(s<sub>t</sub>)</strong><span>critic’s value estimate</span></div>
-                    <div><strong>g<sub>p</sub></strong><span>gradient with respect to probabilities</span></div>
-                  </div>
-                  <div class="layer-forward"><small>Actor output</small><strong>p = softmax(z)</strong></div>
-                  <div class="output-equation-grid">
-                    <div><small>Critic’s first gradient</small><strong>∂L<sub>V</sub>/∂V(s<sub>t</sub>) = −A<sub>t</sub></strong></div>
-                    <div><small>Actor’s first gradient</small><strong>∂L<sub>π</sub>/∂p<sub>a(t)</sub> = −γ<sup>t</sup>A<sub>t</sub>/p<sub>a(t)</sub></strong></div>
-                    <div><small>Softmax partial</small><strong>∂p<sub>i</sub>/∂z<sub>j</sub> = p<sub>i</sub>(1−p<sub>i</sub>) if i=j; &nbsp; −p<sub>i</sub>p<sub>j</sub> otherwise</strong></div>
-                    <div><small>Return to actor’s dense layer</small><strong>∂L<sub>π</sub>/∂z<sub>j</sub> = Σ<sub>i</sub>(∂L<sub>π</sub>/∂p<sub>i</sub>)(∂p<sub>i</sub>/∂z<sub>j</sub>)</strong></div>
-                  </div>
-                </article>
-              </div>
             </div>
           </article>
         </div>
@@ -231,7 +166,6 @@
           <div class="network-panel">
             <span class="diagram-label">Model map</span>
             <div class="network-input diagram-node input-node"><small>Observation</small><strong>4×4×11 encoded board</strong><span>spatial channels preserve each tile’s location and value</span></div>
-            <div class="network-split" aria-hidden="true">↙ policy &nbsp;&nbsp; value ↘</div>
             <div class="network-parallel">
               <div class="network-lane policy-lane">
                 <span class="lane-label">Actor · choose a move</span>
@@ -278,17 +212,14 @@
             </div>
             <div class="update-paths visual-updates">
               <article>
-                <span>Value update</span>
-                <strong>½ A<sub>t</sub><sup>2</sup></strong>
-                <em>prediction moves toward the observed target</em>
+                <span>Value loss</span>
+                <strong>L<sub>V</sub> = ½ A<sub>t</sub><sup>2</sup></strong>
               </article>
               <article>
-                <span>Policy update</span>
-                <strong>−A<sub>t</sub> log π(a<sub>t</sub>|s<sub>t</sub>)</strong>
-                <em>chosen move rises or falls with the advantage</em>
+                <span>Policy loss</span>
+                <strong>L<sub>π</sub> = −A<sub>t</sub> log π(a<sub>t</sub>|s<sub>t</sub>)</strong>
               </article>
             </div>
-            <div class="loop-return"><strong>Critic sets the expectation → advantage judges the move → actor adjusts the policy.</strong></div>
           </div>
         </div>
       </div>
