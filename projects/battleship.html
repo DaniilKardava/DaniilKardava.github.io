@@ -54,11 +54,15 @@
           <h2>Count the easy world, then measure the path to the hard one.</h2>
         </div>
         <div class="body-copy">
-          <p>If overlaps are allowed, counting is straightforward: each labeled ship may independently occupy any position that fits on the board. The answer we actually want is the much smaller subset with no overlaps. Instead of trying to enumerate that subset directly, the model gives each board an energy <em>E</em> that measures how much collision it contains. Legal boards are exactly the zero-energy states.</p>
-          <p>The parameter &beta; acts like a penalty dial. At &beta; = 0, colliding and non-colliding boards are treated alike. As &beta; increases, the Boltzmann weight exp(&minus;&beta;E) progressively suppresses boards with overlap. A Gibbs sampler explores each intermediate distribution by removing one ship and redrawing its position in response to the rest of the board.</p>
-          <div class="formula" aria-label="Conditional probability is proportional to exponential negative beta times energy">P(s | others) ∝ exp(−β E(s))</div>
-          <p>At every setting of &beta;, the sampler records the average remaining overlap. Integrating those measurements tells us how much statistical weight disappears while moving from the easy, unrestricted problem to the collision-free one. Because the unrestricted count is known, that change can be converted into an estimate of the number of legal arrangements.</p>
+          <p>If overlaps are allowed, counting is straightforward: each labeled ship may independently occupy any position that fits on the board. Call this known total <em>N</em><sub>all</sub>. The answer we want, <em>N</em><sub>legal</sub>, counts only the boards with no collisions.</p>
+          <p>Give every board <em>x</em> an energy <em>E</em>(<em>x</em>) that measures its overlap. Legal boards have zero energy; collisions produce positive energy. The partition function <em>Z</em>(&beta;) is a weighted count of every board:</p>
+          <div class="formula" aria-label="Z of beta equals the sum over boards x of exponential negative beta times energy of x">Z(β) = Σ<sub>x</sub> exp(−β E(x))</div>
+          <p>The parameter &beta; is a penalty dial. At &beta; = 0 every board has weight one, so <em>Z</em>(0) = <em>N</em><sub>all</sub>. As &beta; tends to infinity, every positive-energy board is suppressed while every zero-energy board keeps weight one, so <em>Z</em>(&infin;) = <em>N</em><sub>legal</sub>.</p>
+          <p>The average energy under the distribution at &beta; gives the rate at which this weighted count shrinks:</p>
           <div class="formula" aria-label="Derivative of log Z with respect to beta equals negative expected energy">d log Z(β) / dβ = −𝔼β[E]</div>
+          <p>Integrating that rate from the unrestricted endpoint to the collision-free endpoint gives the desired count:</p>
+          <div class="formula" aria-label="The number of legal boards equals the number of all boards times exponential negative the integral from zero to infinity of expected energy at beta">N<sub>legal</sub> = N<sub>all</sub> exp(−∫<sub>0</sub><sup>∞</sup> 𝔼<sub>β</sub>[E] dβ)</div>
+          <p>In practice, the Gibbs sampler draws boards at a sequence of &beta; values. Their energies estimate 𝔼<sub>&beta;</sub>[E] at each point, and those estimates are used to approximate the integral numerically.</p>
         </div>
       </div>
     </section>
