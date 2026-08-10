@@ -24,7 +24,8 @@
       <div class="site-shell">
         <p class="eyebrow">Monte Carlo · Statistical mechanics · C++</p>
         <h1>How many ways can ships share a board without colliding?</h1>
-        <p class="lede">An exploratory computational approach to a hard counting problem: soften the non-overlap constraint, sample the resulting energy landscape, and recover information about valid configurations.</p>
+        <p class="lede">A board arrangement is determined by choosing a position and orientation for every ship. Checking whether one arrangement is legal is easy: no two ships may occupy the same square. Counting every legal arrangement is much harder because the number of possibilities multiplies rapidly with the size of the board and fleet.</p>
+        <p class="lede">This project approaches that count indirectly. It temporarily allows ships to collide, assigns a penalty to every overlap, and gradually strengthens that penalty. Measurements taken along the way reveal how much of the original space remains once only collision-free boards are allowed.</p>
         <ul class="project-meta" aria-label="Project technologies">
           <li>Gibbs sampling</li><li>Boltzmann distributions</li><li>Python prototype</li><li>C++ optimization</li>
         </ul>
@@ -50,12 +51,13 @@
       <div class="site-shell split">
         <div>
           <p class="eyebrow">The idea</p>
-          <h2>Turn a hard constraint into a temperature.</h2>
+          <h2>Count the easy world, then measure the path to the hard one.</h2>
         </div>
         <div class="body-copy">
-          <p>Directly counting non-overlapping placements becomes difficult as the grid and fleet grow. Instead, the model allows overlaps and assigns an energy to them. A Gibbs sampler removes one ship at a time and redraws its position conditioned on the rest of the board.</p>
+          <p>If overlaps are allowed, counting is straightforward: each labeled ship may independently occupy any position that fits on the board. The answer we actually want is the much smaller subset with no overlaps. Instead of trying to enumerate that subset directly, the model gives each board an energy <em>E</em> that measures how much collision it contains. Legal boards are exactly the zero-energy states.</p>
+          <p>The parameter &beta; acts like a penalty dial. At &beta; = 0, colliding and non-colliding boards are treated alike. As &beta; increases, the Boltzmann weight exp(&minus;&beta;E) progressively suppresses boards with overlap. A Gibbs sampler explores each intermediate distribution by removing one ship and redrawing its position in response to the rest of the board.</p>
           <div class="formula" aria-label="Conditional probability is proportional to exponential negative beta times energy">P(s | others) ∝ exp(−β E(s))</div>
-          <p>At low inverse temperature β, collisions are common. Raising β suppresses them until the distribution concentrates on zero-overlap configurations. Average energy along that path is connected to the change in the log partition function.</p>
+          <p>At every setting of &beta;, the sampler records the average remaining overlap. Integrating those measurements tells us how much statistical weight disappears while moving from the easy, unrestricted problem to the collision-free one. Because the unrestricted count is known, that change can be converted into an estimate of the number of legal arrangements.</p>
           <div class="formula" aria-label="Derivative of log Z with respect to beta equals negative expected energy">d log Z(β) / dβ = −𝔼β[E]</div>
         </div>
       </div>
