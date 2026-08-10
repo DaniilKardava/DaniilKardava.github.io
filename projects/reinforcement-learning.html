@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Two actor–critic projects for 2048: one neural-network stack built from scratch and one implemented with TensorFlow and Keras.">
   <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-7">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-8">
 </head>
 <body>
   <header class="site-header">
@@ -120,60 +120,100 @@
             </header>
             <div class="story-visual backprop-story">
               <div class="generic-backprop">
-                <div class="generic-layer">
-                  <small>Generic layer ℓ · forward</small>
-                  <strong>x<sup>(ℓ+1)</sup> = f<sub>ℓ</sub>(x<sup>(ℓ)</sup>; θ<sub>ℓ</sub>)</strong>
+                <div class="generic-definitions">
+                  <div><strong>layer ℓ</strong><span>the layer currently being updated</span></div>
+                  <div><strong>x<sup>(ℓ)</sup></strong><span>its input</span></div>
+                  <div><strong>x<sup>(ℓ+1)</sup></strong><span>its output</span></div>
+                  <div><strong>θ<sub>ℓ</sub></strong><span>its weights and biases</span></div>
+                  <div><strong>g<sub>ℓ+1</sub></strong><span>the gradient arriving from the next layer</span></div>
                 </div>
-                <div class="generic-arrow" aria-hidden="true">←</div>
-                <div class="generic-incoming">
-                  <small>Receive from the layer ahead</small>
-                  <strong>g<sub>ℓ+1</sub> = ∇<sub>x(ℓ+1)</sub>L</strong>
+
+                <div class="given-gradient">
+                  <small>Given</small>
+                  <strong>g<sub>ℓ+1</sub> = ∂L/∂x<sup>(ℓ+1)</sup></strong>
                 </div>
-                <div class="generic-split" aria-hidden="true">↙ &nbsp; chain rule &nbsp; ↘</div>
+
                 <div class="generic-products">
-                  <div><small>Gradient for this layer’s parameters</small><strong>∇<sub>θℓ</sub>L = J<sub>θℓ</sub>f<sub>ℓ</sub><sup>T</sup> g<sub>ℓ+1</sub></strong></div>
-                  <div><small>Gradient passed to the preceding layer</small><strong>g<sub>ℓ</sub> = J<sub>x(ℓ)</sub>f<sub>ℓ</sub><sup>T</sup> g<sub>ℓ+1</sub></strong></div>
+                  <div>
+                    <small>Compute the gradient for this layer’s parameters</small>
+                    <strong>∂L/∂θ<sub>ℓ</sub> = (∂L/∂x<sup>(ℓ+1)</sup>)(∂x<sup>(ℓ+1)</sup>/∂θ<sub>ℓ</sub>)</strong>
+                  </div>
+                  <div>
+                    <small>Compute the gradient to pass to the preceding layer</small>
+                    <strong>g<sub>ℓ</sub> = ∂L/∂x<sup>(ℓ)</sup> = (∂L/∂x<sup>(ℓ+1)</sup>)(∂x<sup>(ℓ+1)</sup>/∂x<sup>(ℓ)</sup>)</strong>
+                  </div>
                 </div>
-                <div class="reverse-sweep" aria-label="Reverse-mode gradient flow">
-                  <span>input</span><i>← g<sub>1</sub></i><span>layer 1</span><i>← g<sub>2</sub></i><span>layer 2</span><i>← ···</i><span>output</span><i>←</i><span>loss L</span>
+
+                <div class="induction-copy">
+                  <strong>Then repeat the same step one layer earlier.</strong>
+                  <p>The loss provides the first gradient at the output. Layer ℓ uses g<sub>ℓ+1</sub> to calculate its own parameter gradients and g<sub>ℓ</sub>; that returned gradient becomes the input to layer ℓ−1. Repeating this backward is efficient because each intermediate derivative is calculated once and reused.</p>
                 </div>
-                <p>Each intermediate gradient is computed once and reused; the network never replays the full chain rule separately for every weight.</p>
               </div>
 
               <div class="layer-equations">
                 <article class="equation-layer dense-equations">
-                  <header><span>01 · Dense layer</span><strong>z = Wx + b, &nbsp; y = φ(z)</strong></header>
+                  <header><span>01 · Dense layer</span><strong>Affine map followed by an activation</strong></header>
+                  <div class="variable-list">
+                    <div><strong>x</strong><span>input vector, x<sup>(ℓ)</sup></span></div>
+                    <div><strong>y</strong><span>output vector, x<sup>(ℓ+1)</sup></span></div>
+                    <div><strong>W, b</strong><span>weights and bias, θ<sub>ℓ</sub></span></div>
+                    <div><strong>z</strong><span>value before activation</span></div>
+                    <div><strong>φ</strong><span>activation function</span></div>
+                    <div><strong>g<sub>y</sub></strong><span>incoming gradient, g<sub>ℓ+1</sub></span></div>
+                    <div><strong>δ</strong><span>local gradient ∂L/∂z</span></div>
+                    <div><strong>g<sub>x</sub></strong><span>returned gradient, g<sub>ℓ</sub></span></div>
+                  </div>
+                  <div class="layer-forward"><small>Forward</small><strong>z = Wx + b, &nbsp; y = φ(z)</strong></div>
                   <div class="equation-grid">
-                    <div><small>Local error</small><strong>δ = g<sub>y</sub> ⊙ φ′(z)</strong></div>
-                    <div><small>Weight gradient</small><strong>∇<sub>W</sub>L = δx<sup>T</sup></strong></div>
-                    <div><small>Bias gradient</small><strong>∇<sub>b</sub>L = δ</strong></div>
-                    <div><small>Pass backward</small><strong>g<sub>x</sub> = W<sup>T</sup>δ</strong></div>
+                    <div><small>Local gradient</small><strong>δ = (∂L/∂y) ⊙ φ′(z)</strong></div>
+                    <div><small>Weight gradient</small><strong>∂L/∂W = δx<sup>T</sup></strong></div>
+                    <div><small>Bias gradient</small><strong>∂L/∂b = δ</strong></div>
+                    <div><small>Return to the preceding layer</small><strong>g<sub>x</sub> = ∂L/∂x = W<sup>T</sup>δ</strong></div>
                   </div>
                 </article>
 
                 <article class="equation-layer conv-equations">
-                  <header><span>02 · Convolutional layer</span><strong>z<sub>k</sub> = Σ<sub>c</sub> x<sub>c</sub> ⋆ K<sub>k,c</sub> + b<sub>k</sub></strong></header>
+                  <header><span>02 · Convolutional layer</span><strong>Spatial correlation followed by an activation</strong></header>
+                  <div class="variable-list">
+                    <div><strong>x<sub>c</sub></strong><span>input channel c</span></div>
+                    <div><strong>y<sub>k</sub></strong><span>output feature map k</span></div>
+                    <div><strong>K<sub>k,c</sub></strong><span>kernel from channel c to map k</span></div>
+                    <div><strong>b<sub>k</sub></strong><span>bias for feature map k</span></div>
+                    <div><strong>z<sub>k</sub></strong><span>map before activation</span></div>
+                    <div><strong>g<sub>k</sub></strong><span>incoming gradient for map k</span></div>
+                    <div><strong>δ<sub>k</sub></strong><span>local gradient ∂L/∂z<sub>k</sub></span></div>
+                    <div><strong>⋆ / *</strong><span>2D correlation / full convolution</span></div>
+                  </div>
+                  <div class="layer-forward"><small>Forward</small><strong>z<sub>k</sub> = Σ<sub>c</sub> x<sub>c</sub> ⋆ K<sub>k,c</sub> + b<sub>k</sub>, &nbsp; y<sub>k</sub> = φ(z<sub>k</sub>)</strong></div>
                   <div class="equation-grid">
-                    <div><small>Local feature-map error</small><strong>δ<sub>k</sub> = g<sub>k</sub> ⊙ φ′(z<sub>k</sub>)</strong></div>
-                    <div><small>Kernel gradient</small><strong>∇<sub>K(k,c)</sub>L = x<sub>c</sub> ⋆ δ<sub>k</sub></strong></div>
-                    <div><small>Bias gradient</small><strong>∇<sub>b(k)</sub>L = Σ<sub>i,j</sub> δ<sub>k,i,j</sub></strong></div>
-                    <div><small>Pass backward</small><strong>g<sub>x(c)</sub> = Σ<sub>k</sub> δ<sub>k</sub> * K<sub>k,c</sub></strong></div>
+                    <div><small>Local gradient</small><strong>δ<sub>k</sub> = g<sub>k</sub> ⊙ φ′(z<sub>k</sub>)</strong></div>
+                    <div><small>Kernel gradient</small><strong>∂L/∂K<sub>k,c</sub> = x<sub>c</sub> ⋆ δ<sub>k</sub></strong></div>
+                    <div><small>Bias gradient</small><strong>∂L/∂b<sub>k</sub> = Σ<sub>i,j</sub> δ<sub>k,i,j</sub></strong></div>
+                    <div><small>Return to input channel c</small><strong>∂L/∂x<sub>c</sub> = Σ<sub>k</sub> δ<sub>k</sub> * K<sub>k,c</sub></strong></div>
                   </div>
                 </article>
 
                 <article class="equation-layer output-equations">
-                  <header><span>03 · Output layer</span><strong>The loss supplies the first upstream gradient</strong></header>
+                  <header><span>03 · Actor / critic output</span><strong>The loss creates the first gradient</strong></header>
+                  <div class="variable-list">
+                    <div><strong>L<sub>π</sub>, L<sub>V</sub></strong><span>policy and value losses</span></div>
+                    <div><strong>z<sub>i</sub></strong><span>actor logit for action i</span></div>
+                    <div><strong>p<sub>i</sub></strong><span>softmax probability of action i</span></div>
+                    <div><strong>a<sub>t</sub></strong><span>action selected at step t</span></div>
+                    <div><strong>A<sub>t</sub></strong><span>advantage of that transition</span></div>
+                    <div><strong>γ</strong><span>discount factor</span></div>
+                    <div><strong>V(s<sub>t</sub>)</strong><span>critic’s value estimate</span></div>
+                    <div><strong>g<sub>p</sub></strong><span>gradient with respect to probabilities</span></div>
+                  </div>
+                  <div class="layer-forward"><small>Actor output</small><strong>p = softmax(z)</strong></div>
                   <div class="output-equation-grid">
-                    <div><small>Critic seed</small><strong>∂L<sub>V</sub>/∂V(s<sub>t</sub>) = −A<sub>t</sub></strong></div>
-                    <div><small>Actor seed for the chosen action</small><strong>∂L<sub>π</sub>/∂p<sub>a(t)</sub> = −γ<sup>t</sup>A<sub>t</sub>/p<sub>a(t)</sub></strong></div>
-                    <div><small>Softmax Jacobian</small><strong>J<sub>softmax</sub> = diag(p) − pp<sup>T</sup></strong></div>
-                    <div><small>Error passed into the dense stack</small><strong>g<sub>z</sub> = J<sub>softmax</sub><sup>T</sup>g<sub>p</sub></strong></div>
+                    <div><small>Critic’s first gradient</small><strong>∂L<sub>V</sub>/∂V(s<sub>t</sub>) = −A<sub>t</sub></strong></div>
+                    <div><small>Actor’s first gradient</small><strong>∂L<sub>π</sub>/∂p<sub>a(t)</sub> = −γ<sup>t</sup>A<sub>t</sub>/p<sub>a(t)</sub></strong></div>
+                    <div><small>Softmax partial</small><strong>∂p<sub>i</sub>/∂z<sub>j</sub> = p<sub>i</sub>(1−p<sub>i</sub>) if i=j; &nbsp; −p<sub>i</sub>p<sub>j</sub> otherwise</strong></div>
+                    <div><small>Return to actor’s dense layer</small><strong>∂L<sub>π</sub>/∂z<sub>j</sub> = Σ<sub>i</sub>(∂L<sub>π</sub>/∂p<sub>i</sub>)(∂p<sub>i</sub>/∂z<sub>j</sub>)</strong></div>
                   </div>
                 </article>
               </div>
-
-              <div class="equation-legend"><span><strong>g</strong> incoming loss gradient</span><span><strong>δ</strong> gradient after the activation</span><span><strong>⋆</strong> 2D correlation</span><span><strong>*</strong> full convolution</span></div>
-              <div class="parameter-update"><small>After the reverse sweep</small><strong>θ<sub>ℓ</sub> ← θ<sub>ℓ</sub> − α · Adam(∇<sub>θℓ</sub>L)</strong></div>
             </div>
           </article>
         </div>
