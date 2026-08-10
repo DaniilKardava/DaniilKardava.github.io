@@ -210,6 +210,28 @@ p { color: var(--muted); line-height: 1.72; }
 .implementation-boundary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
 .implementation-boundary p { display: grid; gap: 6px; margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: 14px; font-size: 1.02rem; line-height: 1.55; }
 .implementation-boundary strong { color: var(--ink); }
+.bucket-intro { max-width: 860px; margin: 0 0 24px; font-size: 1.08rem; line-height: 1.65; }
+.bucket-ledger-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.bucket-ledger { width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.bucket-ledger caption { padding: 17px 19px; color: var(--muted); background: var(--paper); font-size: 1rem; font-weight: 700; text-align: left; }
+.bucket-ledger th, .bucket-ledger td { padding: 16px 18px; border-top: 1px solid var(--line); font-size: 1.02rem; line-height: 1.45; text-align: left; }
+.bucket-ledger thead th { border-top: 0; color: #fff; background: var(--green); font-size: .88rem; letter-spacing: .07em; text-transform: uppercase; }
+.bucket-ledger tbody tr:nth-child(even) { background: rgba(22,79,60,.045); }
+.bucket-ledger tbody td:first-child { color: var(--orange); font-weight: 800; }
+.bucket-ledger tfoot th, .bucket-ledger tfoot td { color: var(--green); background: var(--green-light); font-weight: 800; }
+.bucket-draw { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 18px; align-items: stretch; margin-top: 24px; }
+.bucket-draw > b { align-self: center; color: var(--orange); font-family: Georgia,serif; font-size: 1.8rem; font-weight: 500; }
+.bucket-step { display: grid; align-content: start; gap: 8px; padding: 23px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.bucket-step > span { color: var(--orange); font-size: var(--type-label); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.bucket-step strong { font-family: Georgia,serif; font-size: 1.5rem; font-weight: 500; }
+.bucket-step p { margin: 0; color: var(--muted); font-size: 1.05rem; line-height: 1.55; }
+.sampler-summary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; margin-top: 24px; }
+.sampler-summary p { margin: 0; font-size: 1.08rem; line-height: 1.65; }
+.sampler-complexity { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1px; margin-top: 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--line); }
+.sampler-complexity div { padding: 20px; background: #fff; }
+.sampler-complexity span { display: block; color: var(--orange); font-size: .86rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.sampler-complexity strong { display: block; margin: 8px 0 5px; color: var(--green); font-family: Georgia,serif; font-size: 1.75rem; font-weight: 500; }
+.sampler-complexity p { margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.45; }
 .framework-map + .layer-contracts { margin-top: 22px; }
 .layer-contracts { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
 .layer-contracts div { display: grid; gap: 7px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
@@ -352,7 +374,8 @@ p { color: var(--muted); line-height: 1.72; }
   .project-card { min-height: 600px; padding: 28px 76px 86px 28px; }
   .project-card.placeholder { min-height: 250px; }
   .project-card.placeholder h3 { margin-top: 100px; }
-  .story-header, .implementation-boundary, .layer-family, .layer-contracts, .loss-split, .adam-branches, .generic-definitions, .generic-products { grid-template-columns: 1fr; }
+  .story-header, .implementation-boundary, .layer-family, .layer-contracts, .loss-split, .adam-branches, .generic-definitions, .generic-products, .bucket-draw, .sampler-summary, .sampler-complexity { grid-template-columns: 1fr; }
+  .bucket-draw > b { justify-self: center; transform: rotate(90deg); }
   .given-gradient { grid-template-columns: 1fr; gap: 8px; }
   .given-gradient strong { text-align: left; }
   .track-visual { grid-template-columns: 1fr; }

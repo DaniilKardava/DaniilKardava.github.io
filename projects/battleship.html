@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A computational study of ship-configuration counting using Gibbs sampling and Boltzmann weights.">
   <title>Counting Ship Configurations — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-5">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-6">
 </head>
 <body>
   <header class="site-header">
@@ -81,49 +81,44 @@
         <div class="scratch-story">
           <article class="story-chapter">
             <div class="story-header">
-              <span>01 &middot; The repeated request</span>
+              <span>The sampling request</span>
               <h3>Turn the current board into one weighted placement.</h3>
               <p>After removing a ship, the sampler considers all <em>M</em> positions where that ship could fit. Placement <em>i</em> receives energy <em>E</em><sub>i</sub> according to how it overlaps the remaining fleet and weight exp(&minus;&beta;<em>E</em><sub>i</sub>). The program needs one draw from those normalized weights before it can continue to the next Gibbs update.</p>
             </div>
             <div class="story-visual">
-              <span class="pass-label">Information requested for every new sample</span>
-              <div class="track-visual" aria-label="Information requested for every sample">
-                <i>Current board</i><b>&rarr;</b><i>M placement energies and weights</i><b>&rarr;</b><i>One weighted placement</i>
+              <span class="pass-label">The custom bucket sampler</span>
+              <p class="bucket-intro">Energy is integer-valued, so many placements share only a small number <em>L</em> of distinct weights. The sampler maintains a bucket <em>B</em><sub>e</sub> containing every placement at energy <em>e</em>. Its probability mass is the number of members times their shared Boltzmann weight.</p>
+              <div class="bucket-ledger-wrap">
+                <table class="bucket-ledger">
+                  <caption>Placements grouped by their current overlap energy</caption>
+                  <thead><tr><th>Energy</th><th>Bucket contents</th><th>Bucket mass</th><th>Accumulated mass</th></tr></thead>
+                  <tbody>
+                    <tr><td>e = 0</td><td>B<sub>0</sub> = {i<sub>1</sub>, i<sub>2</sub>, &hellip;}</td><td>|B<sub>0</sub>|</td><td>C<sub>0</sub> = |B<sub>0</sub>|</td></tr>
+                    <tr><td>e = 1</td><td>B<sub>1</sub> = {i<sub>3</sub>, i<sub>4</sub>, &hellip;}</td><td>|B<sub>1</sub>|e<sup>&minus;&beta;</sup></td><td>C<sub>1</sub> = C<sub>0</sub> + |B<sub>1</sub>|e<sup>&minus;&beta;</sup></td></tr>
+                    <tr><td>e = 2</td><td>B<sub>2</sub> = {i<sub>5</sub>, i<sub>6</sub>, &hellip;}</td><td>|B<sub>2</sub>|e<sup>&minus;2&beta;</sup></td><td>C<sub>2</sub> = C<sub>1</sub> + |B<sub>2</sub>|e<sup>&minus;2&beta;</sup></td></tr>
+                    <tr><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr>
+                  </tbody>
+                  <tfoot><tr><th colspan="3">Total mass</th><td>W = &Sigma;<sub>e</sub> |B<sub>e</sub>|e<sup>&minus;&beta;e</sup></td></tr></tfoot>
+                </table>
               </div>
-              <div class="formula" aria-label="Probability of placement i given the board is exponential negative beta energy i divided by the sum of all placement weights">P(i | board) = exp(&minus;&beta;E<sub>i</sub>) / &Sigma;<sub>j</sub> exp(&minus;&beta;E<sub>j</sub>)</div>
-            </div>
-          </article>
 
-          <article class="story-chapter">
-            <div class="story-header">
-              <span>02 &middot; The dynamic-distribution problem</span>
-              <h3>Preprocessing helps only until the weights change.</h3>
-              <p>Efficient sampling from a fixed categorical distribution is well understood: preprocess its weights, then reuse that structure for many draws. Developing an efficient sampler for a dynamic distribution is harder. Here each removal and placement changes the overlap energies of nearby candidates, so a preprocessed table immediately becomes stale. Rebuilding and renormalizing all <em>M</em> weights for every draw gives up the benefit of preprocessing.</p>
-            </div>
-            <div class="story-visual">
-              <span class="pass-label">Why a conventional sampling table is difficult to reuse</span>
-              <div class="track-visual" aria-label="A changing board invalidates a preprocessed sampling table">
-                <i>A ship moves</i><b>&rarr;</b><i>Nearby placement weights change</i><b>&rarr;</b><i>The old table is invalid</i>
+              <div class="bucket-draw" aria-label="Two-step bucketed sampling process">
+                <div class="bucket-step"><span>Step 1</span><strong>Select a bucket</strong><p>Draw <em>u</em> uniformly from [0, <em>W</em>] and choose the first energy <em>e</em> whose accumulated mass <em>C</em><sub>e</sub> reaches <em>u</em>.</p></div>
+                <b aria-hidden="true">&rarr;</b>
+                <div class="bucket-step"><span>Step 2</span><strong>Select a placement</strong><p>Draw uniformly from the placement IDs stored in <em>B</em><sub>e</sub>. That placement becomes the ship's new position.</p></div>
               </div>
-            </div>
-          </article>
 
-          <article class="story-chapter">
-            <div class="story-header">
-              <span>03 &middot; The custom sampler</span>
-              <h3>Maintain a few energy classes instead of rebuilding every placement weight.</h3>
-              <p>The useful structure is that energy is integer-valued. Many placements may exist, but they share only a small number <em>L</em> of distinct energies. Inspired by Walker's approach to decomposing a weighted choice, I grouped placements into buckets <em>B</em><sub>e</sub> by energy. When the board changes, only affected placements move between buckets; the whole distribution is not rebuilt after each Gibbs move.</p>
-            </div>
-            <div class="story-visual">
-              <span class="pass-label">Two-stage draw &middot; L is much smaller than M</span>
-              <div class="track-visual" aria-label="The bucketed sampler first chooses an energy and then a placement">
-                <i>Energy buckets</i><b>&rarr;</b><i>Choose e using total bucket mass</i><b>&rarr;</b><i>Choose uniformly from B<sub>e</sub></i>
+              <div class="sampler-summary">
+                <p>Choosing the bucket contributes |B<sub>e</sub>|e<sup>&minus;&beta;e</sup>/W; choosing uniformly inside it contributes 1/|B<sub>e</sub>|. The bucket size cancels, leaving the required placement probability e<sup>&minus;&beta;e</sup>/W.</p>
+                <p>When a ship moves, only placements crossing its changed squares transfer between buckets. The maintained distribution is updated locally instead of reconstructed over all <em>M</em> placements.</p>
               </div>
-              <div class="formula" aria-label="Probability of choosing energy e is proportional to bucket size times exponential negative beta e, then placement probability given e is one over bucket size">P(e) &prop; |B<sub>e</sub>| exp(&minus;&beta;e), &nbsp; P(i | e) = 1 / |B<sub>e</sub>|</div>
-              <div class="implementation-boundary">
-                <p><strong>Update rather than rebuild</strong><span>The moved ship changes only nearby overlap energies. Those affected placements transfer between energy buckets while all other placements stay where they are.</span></p>
-                <p><strong>The original probability is preserved</strong><span>Bucket mass contributes |B<sub>e</sub>| exp(&minus;&beta;e), and the uniform draw contributes 1/|B<sub>e</sub>|. The bucket size cancels, leaving each placement with weight exp(&minus;&beta;e).</span></p>
+
+              <div class="sampler-complexity" aria-label="Sampler complexity">
+                <div><span>Maintain buckets</span><strong>O(k<sup>2</sup>)</strong><p>affected placement-square pairs for a length-<em>k</em> ship</p></div>
+                <div><span>Select bucket</span><strong>O(L)</strong><p>scan the small set of energy levels</p></div>
+                <div><span>Draw within bucket</span><strong>O(1)</strong><p>uniformly index the selected bucket</p></div>
               </div>
+              <p class="caption">The bucket membership, bucket sizes, and cached weights use O(M + L) storage. In this problem, both <em>k</em> and <em>L</em> are small compared with the number <em>M</em> of possible placements.</p>
             </div>
           </article>
         </div>
