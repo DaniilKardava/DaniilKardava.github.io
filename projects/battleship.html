@@ -128,45 +128,88 @@
       <div class="site-shell">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Exact validation</p>
-            <h2>The sampler tracks ground truth.</h2>
+            <p class="eyebrow">Results</p>
+            <h2>Three views of the same counting identity.</h2>
           </div>
-          <p>For three labeled length-2 ships on a 4×4 board, all 13,824 configurations can be enumerated. A fixed-seed run used 4,000 independently initialized samples at each of 25 β values and closely followed the exact Boltzmann expectation.</p>
+          <p>The method can be checked against exhaustive enumeration on a small board, against a closed-form answer on a full-size board, and against a simpler curve model that may reduce how many inverse-temperature values need to be sampled.</p>
         </div>
 
-        <div class="chart-card">
-          <div class="chart-header">
-            <div><h3>Mean overflow energy</h3><p>Exact enumeration vs. Gibbs samples · β = 0…6</p></div>
-            <div class="chart-legends"><p class="chart-legend exact">Exact</p><p class="chart-legend sampled">Sampled</p></div>
-          </div>
-          <svg class="chart" viewBox="0 0 900 360" role="img" aria-labelledby="chart-title chart-desc">
-            <title id="chart-title">Exact and sampled mean overflow energy across inverse temperature</title>
-            <desc id="chart-desc">The sampled points closely follow the exact energy curve from beta zero through six.</desc>
-            <line class="grid" x1="68" y1="28" x2="870" y2="28"/><line class="grid" x1="68" y1="97" x2="870" y2="97"/><line class="grid" x1="68" y1="165" x2="870" y2="165"/><line class="grid" x1="68" y1="234" x2="870" y2="234"/><line class="grid" x1="68" y1="302" x2="870" y2="302"/>
-            <text x="34" y="32">0.8</text><text x="34" y="101">0.6</text><text x="34" y="169">0.4</text><text x="34" y="238">0.2</text><text x="34" y="306">0.0</text>
-            <path class="curve" d="M68 43 L101 95 L135 138 L168 173 L202 201 L235 223 L269 240 L302 254 L336 265 L369 273 L403 279 L436 284 L469 288 L503 291 L536 294 L570 296 L603 297 L636 298 L670 299 L703 300 L737 300 L770 301 L803 301 L837 301 L870 301"/>
-            <g fill="#164f3c" stroke="#fbfaf5" stroke-width="2">
-              <circle cx="68" cy="41" r="4"/><circle cx="101" cy="97" r="4"/><circle cx="135" cy="139" r="4"/><circle cx="168" cy="171" r="4"/><circle cx="202" cy="207" r="4"/><circle cx="235" cy="223" r="4"/><circle cx="269" cy="239" r="4"/><circle cx="302" cy="250" r="4"/><circle cx="336" cy="264" r="4"/><circle cx="369" cy="273" r="4"/><circle cx="403" cy="277" r="4"/><circle cx="436" cy="285" r="4"/><circle cx="469" cy="288" r="4"/><circle cx="503" cy="291" r="4"/><circle cx="536" cy="295" r="4"/><circle cx="570" cy="296" r="4"/><circle cx="603" cy="297" r="4"/><circle cx="636" cy="297" r="4"/><circle cx="670" cy="299" r="4"/><circle cx="703" cy="299" r="4"/><circle cx="737" cy="300" r="4"/><circle cx="770" cy="301" r="4"/><circle cx="803" cy="301" r="4"/><circle cx="837" cy="301" r="4"/><circle cx="870" cy="301" r="4"/>
-            </g>
-            <text x="65" y="330">0</text><text x="330" y="330">2</text><text x="598" y="330">4</text><text x="864" y="330">6</text>
-            <text x="405" y="354">inverse temperature β</text>
-          </svg>
-          <p class="caption">Curve RMSE: 0.00499. Thermodynamic integration estimated 6,257.5 zero-energy configurations; exhaustive enumeration gives 6,264. See the <a href="https://github.com/DaniilKardava/Battleship/blob/agent/publish-project-site/CVersion/validation.cpp">validation source</a>, <a href="battleship/artifacts/small_exact_validation.csv">curve data</a>, and <a href="battleship/artifacts/small_exact_validation.json">experiment metadata</a>.</p>
-        </div>
-      </div>
-    </section>
+        <div class="scratch-story">
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>01 &middot; Exhaustive enumeration</span>
+              <h3>The 4&times;4 sampler tracks every configuration.</h3>
+              <p>For three labeled length-2 ships, all 13,824 configurations can be enumerated. A fixed-seed run used 4,000 independently initialized samples at each of 25 &beta; values and closely followed the exact Boltzmann expectation.</p>
+            </div>
 
-    <section class="section">
-      <div class="site-shell">
-        <div class="section-heading">
-          <div><p class="eyebrow">What comes next</p><h2>From validation to scale.</h2></div>
-          <p>The small case validates the computational approach. The next experiments should quantify mixing and performance on instances that cannot be exhaustively enumerated.</p>
+            <div class="chart-card">
+              <div class="chart-header">
+                <div><h3>Mean overflow energy</h3><p>Exact enumeration vs. Gibbs samples &middot; &beta; = 0&hellip;6</p></div>
+                <div class="chart-legends"><p class="chart-legend exact">Exact</p><p class="chart-legend sampled">Sampled</p></div>
+              </div>
+              <svg class="chart" viewBox="0 0 900 360" role="img" aria-labelledby="chart-title chart-desc">
+                <title id="chart-title">Exact and sampled mean overflow energy across inverse temperature</title>
+                <desc id="chart-desc">The sampled points closely follow the exact energy curve from beta zero through six.</desc>
+                <line class="grid" x1="68" y1="28" x2="870" y2="28"/><line class="grid" x1="68" y1="97" x2="870" y2="97"/><line class="grid" x1="68" y1="165" x2="870" y2="165"/><line class="grid" x1="68" y1="234" x2="870" y2="234"/><line class="grid" x1="68" y1="302" x2="870" y2="302"/>
+                <text x="34" y="32">0.8</text><text x="34" y="101">0.6</text><text x="34" y="169">0.4</text><text x="34" y="238">0.2</text><text x="34" y="306">0.0</text>
+                <path class="curve" d="M68 43 L101 95 L135 138 L168 173 L202 201 L235 223 L269 240 L302 254 L336 265 L369 273 L403 279 L436 284 L469 288 L503 291 L536 294 L570 296 L603 297 L636 298 L670 299 L703 300 L737 300 L770 301 L803 301 L837 301 L870 301"/>
+                <g fill="#164f3c" stroke="#fbfaf5" stroke-width="2">
+                  <circle cx="68" cy="41" r="4"/><circle cx="101" cy="97" r="4"/><circle cx="135" cy="139" r="4"/><circle cx="168" cy="171" r="4"/><circle cx="202" cy="207" r="4"/><circle cx="235" cy="223" r="4"/><circle cx="269" cy="239" r="4"/><circle cx="302" cy="250" r="4"/><circle cx="336" cy="264" r="4"/><circle cx="369" cy="273" r="4"/><circle cx="403" cy="277" r="4"/><circle cx="436" cy="285" r="4"/><circle cx="469" cy="288" r="4"/><circle cx="503" cy="291" r="4"/><circle cx="536" cy="295" r="4"/><circle cx="570" cy="296" r="4"/><circle cx="603" cy="297" r="4"/><circle cx="636" cy="297" r="4"/><circle cx="670" cy="299" r="4"/><circle cx="703" cy="299" r="4"/><circle cx="737" cy="300" r="4"/><circle cx="770" cy="301" r="4"/><circle cx="803" cy="301" r="4"/><circle cx="837" cy="301" r="4"/><circle cx="870" cy="301" r="4"/>
+                </g>
+                <text x="65" y="330">0</text><text x="330" y="330">2</text><text x="598" y="330">4</text><text x="864" y="330">6</text>
+                <text x="405" y="354">inverse temperature &beta;</text>
+              </svg>
+              <p class="caption">Curve RMSE: 0.00499. Thermodynamic integration estimated 6,257.5 zero-energy configurations; exhaustive enumeration gives 6,264&mdash;a 0.10% count error. See the <a href="https://github.com/DaniilKardava/Battleship/blob/agent/publish-project-site/CVersion/validation.cpp">validation source</a>, <a href="battleship/artifacts/small_exact_validation.csv">curve data</a>, and <a href="battleship/artifacts/small_exact_validation.json">experiment metadata</a>.</p>
+            </div>
+          </article>
+
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>02 &middot; Full-size board, closed-form answer</span>
+              <h3>Ten point ships on a 10&times;10 board.</h3>
+              <p>When <em>k</em> = 1, a legal board assigns ten labeled ships to ten distinct cells. The exact answer no longer requires enumerating 100<sup>10</sup> assignments: it is the falling factorial below. This makes the archived large run independently checkable.</p>
+            </div>
+
+            <div class="story-visual">
+              <div class="formula" aria-label="The legal count equals 100 times 99 through 91">N<sub>legal</sub> = 100 &middot; 99 &middot; &hellip; &middot; 91 = 62,815,650,955,529,472,000</div>
+              <div class="evidence-grid" aria-label="Ten by ten validation summary">
+                <article><strong>0.464960</strong><span>sampled energy integral</span></article>
+                <article><strong>0.464966</strong><span>exact log count ratio</span></article>
+                <article><strong>0.0006%</strong><span>relative count error</span></article>
+              </div>
+              <p class="caption">The archived run contains 1,000 energy observations at each of 1,000 &beta; values from 0 through 9.99. Its integral estimates 6.281602&times;10<sup>19</sup> legal cell assignments, compared with the exact 6.281565&times;10<sup>19</sup>. This run used the binary collision energy then implemented in the code; like overflow energy, it is zero exactly on legal boards. See the <a href="https://github.com/DaniilKardava/Battleship/blob/a5cd41d013864fe5093dec59b987186e0814a9e2/CVersion/energies.txt">archived samples</a> and <a href="battleship/artifacts/large_k1_validation.json">derived metadata</a>.</p>
+            </div>
+          </article>
+
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>03 &middot; A compression conjecture</span>
+              <h3>Can a few &beta; values stand in for the whole curve?</h3>
+              <p>The observed mean-energy curve is close to a single exponential, <span>a exp(&minus;b&beta;)</span>. If that shape persists across larger problems, a small number of sampled &beta; values could determine <em>a</em> and <em>b</em>, after which the required integral is simply <em>a</em>/<em>b</em>.</p>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div><h3>E&#770;<sub>&beta;</sub> = 0.4662 exp(&minus;0.9996&beta;)</h3><p>Fit from five archived 10&times;10 samples &middot; &beta; = 0, 0.5, 1, 1.5, 2</p></div>
+                <div class="chart-legends"><p class="chart-legend">Exponential fit</p><p class="chart-legend sampled">Five samples</p></div>
+              </div>
+              <svg class="chart" viewBox="0 0 900 360" role="img" aria-labelledby="fit-chart-title fit-chart-desc">
+                <title id="fit-chart-title">Five sampled mean energies and an exponential fit</title>
+                <desc id="fit-chart-desc">Five points from beta zero to two lie close to the fitted exponential curve.</desc>
+                <line class="grid" x1="68" y1="28" x2="870" y2="28"/><line class="grid" x1="68" y1="83" x2="870" y2="83"/><line class="grid" x1="68" y1="138" x2="870" y2="138"/><line class="grid" x1="68" y1="192" x2="870" y2="192"/><line class="grid" x1="68" y1="247" x2="870" y2="247"/><line class="grid" x1="68" y1="302" x2="870" y2="302"/>
+                <text x="30" y="32">0.5</text><text x="30" y="87">0.4</text><text x="30" y="142">0.3</text><text x="30" y="196">0.2</text><text x="30" y="251">0.1</text><text x="30" y="306">0.0</text>
+                <path class="curve" d="M68 47 L148 103 L228 147 L309 181 L389 208 L469 229 L549 245 L629 258 L710 267 L790 275 L870 281"/>
+                <g fill="#164f3c" stroke="#fbfaf5" stroke-width="2">
+                  <circle cx="68" cy="46" r="6"/><circle cx="228" cy="147" r="6"/><circle cx="389" cy="209" r="6"/><circle cx="549" cy="247" r="6"/><circle cx="710" cy="264" r="6"/>
+                </g>
+                <text x="65" y="330">0</text><text x="221" y="330">0.5</text><text x="385" y="330">1</text><text x="542" y="330">1.5</text><text x="706" y="330">2</text><text x="858" y="330">2.5</text>
+                <text x="405" y="354">inverse temperature &beta;</text>
+              </svg>
+              <p class="caption">These five evenly spaced points give an analytic integral of 0.46638, 0.30% above the exact 0.46497; the implied configuration count is within 0.14%. This is an encouraging proof of concept, not yet evidence that one exponential works for every grid, fleet, or energy definition. See the <a href="battleship/artifacts/five_point_exponential_fit.csv">five-point data</a> and <a href="battleship/artifacts/large_k1_validation.json">fit parameters</a>.</p>
+            </div>
+          </article>
         </div>
-        <div class="roadmap">
-          <article><h3>Validated</h3><p>The 4×4 exact case now establishes agreement between enumeration, Gibbs sampling, and thermodynamic integration.</p></article>
-          <article><h3>Measure mixing</h3><p>Estimate autocorrelation and sensitivity to burn-in across several ship densities and β schedules.</p></article>
-          <article><h3>Scale</h3><p>Run a larger ship instance, report the estimated count or partition-function ratio, and profile the benefit of bucketed local updates.</p></article>
-        </div>
+
         <div class="hero-actions">
           <a class="button primary" href="https://github.com/DaniilKardava/Battleship">Explore the source</a>
           <a class="button secondary" href="../">Back to all projects</a>
