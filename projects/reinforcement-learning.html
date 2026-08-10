@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Two actor–critic projects for 2048: one neural-network stack built from scratch and one implemented with TensorFlow and Keras.">
   <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-5">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-6">
 </head>
 <body>
   <header class="site-header">
@@ -13,9 +13,9 @@
       <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
       <div class="nav-links">
         <a href="#problem">Problem</a>
-        <a href="#agent">Architecture</a>
         <a href="#implementations">Two builds</a>
         <a href="#scratch">From scratch</a>
+        <a href="#agent">Keras build</a>
         <a href="https://github.com/DaniilKardava/ReinforcementLearning">Source ↗</a>
       </div>
     </nav>
@@ -47,9 +47,111 @@
               <source src="reinforcement-learning/artifacts/agent_2048_4x.mp4#t=18" type="video/mp4">
               Your browser does not support embedded MP4 video.
             </video>
-            <figcaption><strong>A trained policy in motion.</strong> This excerpt now plays at half the previous speed—effectively 2× the original recording—so each board transition is easier to follow.</figcaption>
           </figure>
-          <p>The project begins below the learning algorithm: it implements the game rules, transition function, rewards, terminal condition, and feature encodings from scratch.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section project-tracks" id="implementations">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">Two implementations</p><h2>Understand the machinery. Then use the tools.</h2></div>
+          <p>The same 2048 problem became two projects with different goals: expose the learning machinery first, then build a longer-running experiment with a standard deep-learning stack.</p>
+        </div>
+        <div class="track-grid">
+          <article class="track-card active">
+            <span>01 · From scratch</span>
+            <div class="track-visual" aria-hidden="true">
+              <i>Network</i><b>→</b><i>Layers</i><b>→</b><i>Gradients</i>
+            </div>
+            <h3>Build the learning stack.</h3>
+            <p>A small neural-network framework makes every forward pass, derivative, and parameter update inspectable.</p>
+          </article>
+          <article class="track-card keras-track">
+            <span>02 · With Keras</span>
+            <div class="track-visual" aria-hidden="true">
+              <i>Models</i><b>→</b><i>Training</i><b>→</b><i>Playback</i>
+            </div>
+            <h3>Scale the experiment.</h3>
+            <p>Standard layers and automatic differentiation support longer training, saved checkpoints, and complete recorded games.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section scratch-section" id="scratch">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">From scratch · inside the implementation</p><h2>A framework for learning—and the calculus inside it.</h2></div>
+          <p>The central accomplishment was not a particular network shape. It was designing reusable layer objects, then deriving and coding the backward pass that makes those objects trainable.</p>
+        </div>
+
+        <div class="scratch-story">
+          <article class="story-chapter">
+            <header class="story-header">
+              <span>01 · Software design</span>
+              <h3>One network class coordinates a family of layers.</h3>
+              <p>The coordinator owns the traversal; each layer owns the mathematics of its operation. That boundary lets dense, convolutional, and output layers participate in one training lifecycle.</p>
+            </header>
+            <div class="story-visual framework-story">
+              <div class="framework-map">
+                <div class="network-core"><small>Coordinator</small><strong>Network</strong><span>orders layers · carries tensors · runs training</span></div>
+                <div class="framework-connector" aria-hidden="true">↓</div>
+                <div class="layer-family">
+                  <div><small>Spatial operation</small><strong>ConvPoolLayer</strong></div>
+                  <div><small>Vector operation</small><strong>DenseLayer</strong></div>
+                  <div><small>Learning objective</small><strong>Output layer</strong></div>
+                </div>
+              </div>
+              <div class="lifecycle-strip">
+                <code>build_network(shape)</code><i>→</i><code>forward(x)</code><i>→</i><code>backward(error)</code><i>→</i><code>calculate_deltas()</code><i>→</i><code>update_weights()</code>
+              </div>
+              <div class="layer-contracts">
+                <div><strong>Build</strong><span>Infer shapes and initialize parameters.</span></div>
+                <div><strong>Forward</strong><span>Transform an input and cache what backward needs.</span></div>
+                <div><strong>Backward</strong><span>Compute local gradients and return an upstream error.</span></div>
+                <div><strong>Update</strong><span>Apply the calculated changes to weights and biases.</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="story-chapter">
+            <header class="story-header">
+              <span>02 · Hand-coded backpropagation</span>
+              <h3>Each layer knows how to send responsibility backward.</h3>
+              <p>The difficult part was translating the chain rule into tensor operations for three different cases: dense weights, spatial kernels, and the policy or value output.</p>
+            </header>
+            <div class="story-visual backprop-story">
+              <div class="backprop-flow">
+                <article>
+                  <span>Dense layer</span>
+                  <strong>∂L/∂W = δx<sup>T</sup></strong>
+                  <p>An outer product forms every weight gradient; W<sup>T</sup>δ carries the error to the preceding layer.</p>
+                </article>
+                <div class="backprop-arrow" aria-hidden="true">←</div>
+                <article>
+                  <span>Convolutional layer</span>
+                  <strong>∂L/∂K = x ⋆ δ</strong>
+                  <p>Input–error correlation recovers each kernel gradient; full convolution reconstructs the error for earlier feature maps.</p>
+                </article>
+                <div class="backprop-arrow" aria-hidden="true">←</div>
+                <article>
+                  <span>Output layer</span>
+                  <strong>Loss → output derivative</strong>
+                  <p>The value loss starts with −A<sub>t</sub>; the policy loss starts with −A<sub>t</sub>/π(a<sub>t</sub>|s<sub>t</sub>) and passes through the softmax Jacobian.</p>
+                </article>
+              </div>
+              <div class="chain-rule-band">
+                <span>Upstream error</span><b>×</b><span>local activation derivative</span><b>→</b><span>parameter gradients</span><b>+</b><span>error for the preceding layer</span>
+              </div>
+              <div class="backprop-code-map">
+                <code>DenseLayer.calculate_deltas()</code>
+                <code>ConvPoolLayer.calculate_deltas()</code>
+                <code>softmax: diag(p) − pp<sup>T</sup></code>
+                <code>Network.backward(error)</code>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -57,19 +159,18 @@
     <section class="section agent-system" id="agent">
       <div class="site-shell">
         <div class="section-heading">
-          <div><p class="eyebrow">Architecture and learning loop</p><h2>From board state to action—and back to an update.</h2></div>
-          <p>Both implementations use the same advantage actor–critic design. The diagram separates the neural-network architecture from the feedback loop that trains it.</p>
+          <div><p class="eyebrow">Keras implementation</p><h2>From board state to action—and back to an update.</h2></div>
+          <p>Standard Keras layers make the model compact enough to read as a diagram. One game transition then supplies the feedback that updates the policy and value estimates.</p>
         </div>
 
-        <div class="rl-system-diagram" aria-label="Actor–critic network architecture and reinforcement-learning loop">
+        <div class="rl-system-diagram" aria-label="Keras actor–critic architecture and reinforcement-learning loop">
           <div class="network-panel">
-            <span class="diagram-label">Library architecture · separate networks</span>
-            <p class="diagram-context">The Keras actor and critic receive the same board tensor but each owns its own Conv2D(128) → Conv2D(64) → Dense(256) parameters.</p>
-            <div class="network-input diagram-node input-node"><small>Observation</small><strong>4×4×11 encoded board</strong><span>the same state is sent to two separate networks</span></div>
-            <div class="network-split" aria-hidden="true">↙ separate weights ↘</div>
+            <span class="diagram-label">Model map</span>
+            <div class="network-input diagram-node input-node"><small>Observation</small><strong>4×4×11 encoded board</strong><span>spatial channels preserve each tile’s location and value</span></div>
+            <div class="network-split" aria-hidden="true">↙ policy &nbsp;&nbsp; value ↘</div>
             <div class="network-parallel">
               <div class="network-lane policy-lane">
-                <span class="lane-label">Actor · policy network</span>
+                <span class="lane-label">Actor · choose a move</span>
                 <div class="lane-flow">
                   <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
                   <div class="flow-arrow" aria-hidden="true">→</div>
@@ -81,7 +182,7 @@
                 </div>
               </div>
               <div class="network-lane value-lane">
-                <span class="lane-label">Critic · value network</span>
+                <span class="lane-label">Critic · judge the position</span>
                 <div class="lane-flow">
                   <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
                   <div class="flow-arrow" aria-hidden="true">→</div>
@@ -96,190 +197,39 @@
           </div>
 
           <div class="loop-panel">
-            <span class="diagram-label">One transition, two updates</span>
-            <p class="diagram-context">A single move produces the data used to train both networks. The scratch experiment uses γ = 1, so future value is not discounted.</p>
+            <span class="diagram-label">Learning loop · one move</span>
             <div class="learning-loop">
-              <div class="loop-step"><strong>1</strong><span>Encode current board s<sub>t</sub></span></div>
+              <div class="loop-step"><strong>1</strong><span>Encode board s<sub>t</sub></span></div>
               <div class="loop-arrow" aria-hidden="true">→</div>
-              <div class="loop-step"><strong>2</strong><span>Actor samples valid action a<sub>t</sub></span></div>
+              <div class="loop-step"><strong>2</strong><span>Sample valid action a<sub>t</sub></span></div>
               <div class="loop-arrow" aria-hidden="true">→</div>
-              <div class="loop-step"><strong>3</strong><span>Environment returns r<sub>t</sub>, s<sub>t+1</sub></span></div>
+              <div class="loop-step"><strong>3</strong><span>Observe r<sub>t</sub>, s<sub>t+1</sub></span></div>
               <div class="loop-arrow" aria-hidden="true">→</div>
-              <div class="loop-step"><strong>4</strong><span>Critic evaluates both states</span></div>
+              <div class="loop-step"><strong>4</strong><span>Estimate both state values</span></div>
               <div class="loop-arrow" aria-hidden="true">→</div>
               <div class="loop-step"><strong>5</strong><span>Compute advantage A<sub>t</sub></span></div>
             </div>
             <div class="advantage-formula">
-              <span>nonterminal</span><strong>A<sub>t</sub> = r<sub>t</sub> + γV(s<sub>t+1</sub>) − V(s<sub>t</sub>)</strong>
-              <span>terminal</span><strong>A<sub>t</sub> = r<sub>t</sub> − V(s<sub>t</sub>)</strong>
+              <span>feedback</span><strong>A<sub>t</sub> = r<sub>t</sub> + γV(s<sub>t+1</sub>) − V(s<sub>t</sub>)</strong>
             </div>
-            <div class="update-paths">
+            <div class="update-paths visual-updates">
               <article>
-                <span>Critic update</span>
-                <strong>L<sub>V</sub> = ½ A<sub>t</sub><sup>2</sup></strong>
-                <p>Treat the bootstrapped target as fixed and move V(s<sub>t</sub>) toward it. This improves the baseline used to judge later actions.</p>
+                <span>Value update</span>
+                <strong>½ A<sub>t</sub><sup>2</sup></strong>
+                <em>prediction moves toward the observed target</em>
               </article>
               <article>
-                <span>Actor update</span>
-                <strong>L<sub>π</sub> = −A<sub>t</sub> log π(a<sub>t</sub> | s<sub>t</sub>)</strong>
-                <p>Positive advantage reinforces the sampled action; negative advantage suppresses it. Only the chosen action’s log-probability enters this update.</p>
+                <span>Policy update</span>
+                <strong>−A<sub>t</sub> log π(a<sub>t</sub>|s<sub>t</sub>)</strong>
+                <em>chosen move rises or falls with the advantage</em>
               </article>
             </div>
-            <div class="loop-return"><span>No weights are shared between actor and critic.</span><strong>Advantage A<sub>t</sub> is the bridge: critic supplies the baseline; actor uses the verdict.</strong></div>
+            <div class="loop-return"><strong>Critic sets the expectation → advantage judges the move → actor adjusts the policy.</strong></div>
           </div>
         </div>
-
-        <div class="architecture diagram-notes">
-          <div class="arch-row"><span>State + mask</span><p>The 11×4×4 tensor represents the board. Before softmax, logits for moves that do not change the grid are set to negative infinity, so invalid actions receive zero probability.</p></div>
-          <div class="arch-row"><span>Transition</span><p>The environment moves and merges tiles, prevents a tile from merging twice in one move, sums the newly created tile values as reward, and spawns a 2 with probability 0.9 or a 4 with probability 0.1.</p></div>
-          <div class="arch-row"><span>Critic</span><p>For a nonterminal move, reward plus the next-state value becomes the target. At the terminal state there is no bootstrap term. The value gradient is proportional to −A<sub>t</sub>.</p></div>
-          <div class="arch-row"><span>Actor</span><p>The policy gradient is proportional to −A<sub>t</sub>/π(a<sub>t</sub>|s<sub>t</sub>) before the softmax Jacobian is applied. This is the derivative of the negative advantage-weighted log-probability.</p></div>
-          <div class="arch-row"><span>Together</span><p>The critic learns what return to expect; the actor learns which action beats that expectation. As the actor changes the visited states, the critic must continually update its baseline on the new experience.</p></div>
-        </div>
       </div>
     </section>
 
-    <section class="section project-tracks" id="implementations">
-      <div class="site-shell">
-        <div class="section-heading">
-          <div><p class="eyebrow">Two implementations</p><h2>Understand the machinery. Then use the tools.</h2></div>
-          <p>The two projects share the 2048 environment and actor–critic strategy, but answer different engineering questions.</p>
-        </div>
-        <div class="track-grid">
-          <article class="track-card active">
-            <span>01 · From scratch</span>
-            <h3>Build the learning stack.</h3>
-            <p>A NumPy/SciPy implementation supplies convolutional and dense layers, forward and backward passes, activation derivatives, weight initialization, Adam and SGD updates, action masking, and the actor–critic learning rule.</p>
-          </article>
-          <article class="track-card">
-            <span>02 · With libraries</span>
-            <h3>Scale the experiment.</h3>
-            <p>The TensorFlow/Keras version expresses the policy and value models with standard layers and automatic differentiation, making it practical to train longer, save checkpoints, reload policies, and record complete games.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-
-    <section class="section scratch-section" id="scratch">
-      <div class="site-shell">
-        <div class="section-heading">
-          <div><p class="eyebrow">From scratch · inside the implementation</p><h2>Four layers of work beneath the agent.</h2></div>
-          <p>The scratch version is more than a hand-written training loop. It follows one move through spatial computation, a reusable layer system, two explicit learning gradients, and a stateful optimizer.</p>
-        </div>
-
-        <div class="scratch-story">
-          <article class="story-chapter">
-            <header class="story-header">
-              <span>01 · Convolutional backpropagation</span>
-              <h3>A board moves forward. A gradient moves backward.</h3>
-              <p>Both scratch networks transform an 11-channel board with custom convolutional and dense layers. Training reverses that entire path to recover input, kernel, weight, and bias gradients.</p>
-            </header>
-            <div class="story-visual tensor-story">
-              <span class="pass-label">Forward pass →</span>
-              <div class="tensor-pipeline">
-                <div class="flow-box input"><small>Board</small><strong>11×4×4</strong><em>tile channels</em></div><i>→</i>
-                <div class="flow-box"><small>Conv 2×2</small><strong>20×3×3</strong><em>feature maps</em></div><i>→</i>
-                <div class="flow-box"><small>Conv 2×2</small><strong>20×2×2</strong><em>feature maps</em></div><i>→</i>
-                <div class="flow-box"><small>Flatten</small><strong>80</strong><em>features</em></div><i>→</i>
-                <div class="flow-box"><small>Dense stack</small><strong>64 → 64 → 64</strong><em>hidden units</em></div><i>→</i>
-                <div class="flow-box output"><small>Output</small><strong>4 or 1</strong><em>policy / value</em></div>
-              </div>
-              <div class="backward-ribbon"><strong>← Backpropagation</strong><span>loss derivative → dense errors → reshaped feature-map errors → convolutional kernel gradients → earlier layers</span></div>
-              <div class="technical-callouts">
-                <span><strong>Forward convolution</strong>Channel-wise 2D correlation</span>
-                <span><strong>Layer error</strong>Downstream error propagated through weights</span>
-                <span><strong>Kernel gradient</strong>Correlation of layer input with local error</span>
-                <span><strong>Dense gradient</strong>Outer product of error and prior activation</span>
-              </div>
-            </div>
-          </article>
-
-          <article class="story-chapter">
-            <header class="story-header">
-              <span>02 · Reusable framework</span>
-              <h3>One interface connects every layer.</h3>
-              <p>The network is assembled from objects rather than hard-coded equations. A shared lifecycle lets convolutional, dense, and output layers participate in the same forward and backward traversal.</p>
-            </header>
-            <div class="story-visual framework-story">
-              <div class="framework-map">
-                <div class="network-core"><small>Coordinator</small><strong>Network</strong><span>build · forward · backward · train</span></div>
-                <div class="framework-connector" aria-hidden="true">↓</div>
-                <div class="layer-family">
-                  <div><small>Spatial</small><strong>ConvPoolLayer</strong></div>
-                  <div><small>Vector</small><strong>Dense</strong></div>
-                  <div><small>Objective</small><strong>Output layer</strong></div>
-                </div>
-              </div>
-              <div class="lifecycle-strip">
-                <code>build_network(shape)</code><i>→</i><code>forward(x)</code><i>→</i><code>backward(error)</code><i>→</i><code>calculate_deltas()</code><i>→</i><code>update_weights()</code>
-              </div>
-              <div class="implementation-boundary">
-                <p><strong>Numerical primitives</strong>NumPy stores tensors; SciPy supplies 2D correlation and convolution.</p>
-                <p><strong>Implemented directly</strong>Shape propagation, activations, forward passes, backpropagation, parameter gradients, losses, and updates.</p>
-              </div>
-            </div>
-          </article>
-
-          <article class="story-chapter">
-            <header class="story-header">
-              <span>03 · Explicit actor–critic gradients</span>
-              <h3>One transition creates two different derivatives.</h3>
-              <p>The advantage is computed outside either network and converted into two output-gradient functions. The generic backpropagator then carries each derivative through the appropriate model.</p>
-            </header>
-            <div class="story-visual gradient-story">
-              <div class="transition-trace">
-                <div><small>Current state</small><strong>s<sub>t</sub></strong></div><i>→</i>
-                <div><small>Actor samples</small><strong>a<sub>t</sub></strong></div><i>→</i>
-                <div><small>Environment</small><strong>r<sub>t</sub>, s<sub>t+1</sub></strong></div><i>→</i>
-                <div class="advantage-node"><small>Critic comparison</small><strong>A<sub>t</sub></strong></div>
-              </div>
-              <div class="loss-split">
-                <div class="loss-card critic-loss">
-                  <span>Critic derivative</span>
-                  <strong>∂L<sub>V</sub>/∂V = −A<sub>t</sub></strong>
-                  <code>lambda y: -advantage</code>
-                  <p>Push the current value estimate toward the bootstrapped target.</p>
-                </div>
-                <div class="loss-bridge" aria-hidden="true">A<sub>t</sub><br>↙ &nbsp; ↘</div>
-                <div class="loss-card actor-loss">
-                  <span>Actor derivative</span>
-                  <strong>∂L<sub>π</sub>/∂π(a<sub>t</sub>) = −γ<sup>t</sup>A<sub>t</sub>/π(a<sub>t</sub>)</strong>
-                  <code>lambda y: -(gamma ** steps) * advantage / y</code>
-                  <p>Select the sampled action’s softmax-Jacobian row and reinforce or suppress it.</p>
-                </div>
-              </div>
-              <p class="story-takeaway"><strong>No parameters are shared.</strong> The advantage is the scalar interface between the critic’s expectation and the actor’s action probability. In this run, γ = 1.</p>
-            </div>
-          </article>
-
-          <article class="story-chapter">
-            <header class="story-header">
-              <span>04 · Optimizer state</span>
-              <h3>Adam turns each gradient into an adaptive update.</h3>
-              <p>Every trainable layer owns separate optimizer state for its weights and biases. Adam remembers both the direction and recent scale of their gradients.</p>
-            </header>
-            <div class="story-visual adam-story">
-              <div class="adam-flow">
-                <div class="gradient-node"><small>Current gradient</small><strong>g<sub>t</sub></strong></div>
-                <div class="adam-branches">
-                  <div><small>First moment</small><strong>m<sub>t</sub> = β₁m<sub>t−1</sub> + (1−β₁)g<sub>t</sub></strong><span>direction</span></div>
-                  <div><small>Second moment</small><strong>v<sub>t</sub> = β₂v<sub>t−1</sub> + (1−β₂)g<sub>t</sub><sup>2</sup></strong><span>scale</span></div>
-                </div>
-                <div class="framework-connector" aria-hidden="true">↓</div>
-                <div class="adam-update"><small>Bias-correct and scale</small><strong>θ<sub>t+1</sub> = θ<sub>t</sub> − α m̂<sub>t</sub> / (√v̂<sub>t</sub> + ε)</strong></div>
-              </div>
-              <div class="optimizer-notes">
-                <span>Separate moments for weights</span>
-                <span>Separate moments for biases</span>
-                <span>Bias correction advances each step</span>
-                <span>SGD remains interchangeable</span>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
     <section class="section" id="results">
       <div class="site-shell">
         <div class="section-heading">
