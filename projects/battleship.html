@@ -13,6 +13,7 @@
       <a class="brand" href="../"><span class="brand-mark">D</span><span>Daniil Kardava</span></a>
       <div class="nav-links">
         <a href="#method">Method</a>
+        <a href="#performance">Performance</a>
         <a href="#results">Results</a>
         <a href="https://github.com/DaniilKardava/Battleship">Source ↗</a>
       </div>
@@ -67,20 +68,67 @@
       </div>
     </section>
 
-    <section class="section">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">Implementation</p>
-          <h2>Prototype first. Then remove work.</h2>
-          <p>The optimization strategy was driven by the structure of the sampler: each move changes only a few squares, and energy takes values in a small discrete range.</p>
+    <section class="section scratch-section" id="performance">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Performance optimization</p>
+            <h2>Profile. Change the data structure. Profile again.</h2>
+          </div>
+          <p>The Python prototype established correctness, but moving the sampler to C++ was only the beginning. I used VTune to follow the hot path through successive revisions; saved gprof snapshots preserve the call counts. The expensive operation was not evaluating one board: it was repeatedly rebuilding a probability distribution over every possible placement.</p>
         </div>
-        <div class="architecture">
-          <div class="arch-row"><span>Python</span><p>NumPy prototype established the grid representation, energy models, and Gibbs update.</p></div>
-          <div class="arch-row"><span>C++</span><p>The sampler was ported for larger experiments and profiled iteratively.</p></div>
-          <div class="arch-row"><span>Local updates</span><p>Only candidate placements intersecting a changed square have their energy updated.</p></div>
-          <div class="arch-row"><span>Buckets</span><p>Placements are grouped by integer energy, replacing repeated full-vector probability calculations.</p></div>
-          <div class="arch-row"><span>Sampling</span><p>A custom weighted draw selects an energy bucket and then a placement within it.</p></div>
+
+        <div class="scratch-story">
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>01 &middot; Find the repeated work</span>
+              <h3>One random draw rebuilt the entire distribution.</h3>
+              <p>The first C++ version stored one Boltzmann weight for each of <em>M</em> candidate placements. Every Gibbs move constructed a new <code>std::discrete_distribution</code>, which normalized the weights and built cumulative sums before returning a single sample. In one preserved pre-redesign profile, that run produced 12,000 calls each to normalization, accumulation, and <code>partial_sum</code>.</p>
+            </div>
+            <div class="story-visual">
+              <span class="pass-label">Original sampling path &middot; O(M) setup for each draw</span>
+              <div class="track-visual" aria-label="Original sampling path">
+                <i>M placement weights</i><b>&rarr;</b><i>Rebuild categorical table</i><b>&rarr;</b><i>Return one placement</i>
+              </div>
+            </div>
+          </article>
+
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>02 &middot; Adapt Walker's sampling idea</span>
+              <h3>Sample weight classes instead of individual placements.</h3>
+              <p>Walker's method suggested replacing one long weighted choice with smaller uniform choices. Here the distribution changes after every move, but the energy is integer-valued, so thousands of placements share only a small number <em>L</em> of distinct weights. I adapted that idea into a dynamic sampler built from energy buckets rather than repeatedly rebuilding a static table over all <em>M</em> placements.</p>
+            </div>
+            <div class="story-visual">
+              <span class="pass-label">Bucketed sampling path &middot; L is much smaller than M</span>
+              <div class="track-visual" aria-label="Bucketed sampling path">
+                <i>L energy buckets</i><b>&rarr;</b><i>Choose a bucket by total weight</i><b>&rarr;</b><i>Choose an ID uniformly</i>
+              </div>
+              <div class="formula" aria-label="Probability of choosing energy e is proportional to bucket size times exponential negative beta e">P(E=e) &prop; |B<sub>e</sub>| exp(&minus;&beta;e), &nbsp; P(id | E=e) = 1 / |B<sub>e</sub>|</div>
+              <div class="implementation-boundary">
+                <p><strong>Why it is correct</strong><span>Every placement in bucket <em>B</em><sub>e</sub> has the same weight exp(&minus;&beta;e). Choosing the bucket by its total mass and then choosing uniformly inside it gives each placement exactly that Boltzmann probability.</span></p>
+                <p><strong>Why it is fast</strong><span>The sampler scans <em>L</em> energy levels and then draws from one vector in constant time. A reverse index supports constant-time swap-and-pop moves when a placement changes buckets.</span></p>
+              </div>
+            </div>
+          </article>
+
+          <article class="story-chapter">
+            <div class="story-header">
+              <span>03 &middot; Follow the hotspot</span>
+              <h3>Each improvement revealed the next bottleneck.</h3>
+              <p>After the categorical table disappeared, profiles shifted into the code that maintained the buckets. The remaining commits form a clear optimization loop: measure a hot path, exploit the sampler's local structure, and measure again.</p>
+            </div>
+            <div class="architecture">
+              <div class="arch-row"><span>Storage</span><p>Removed the tensor dependency, flattened the grid, and passed ship state by reference. The accompanying commit recorded the rewritten implementation as roughly three times faster than the preceding C++ version.</p></div>
+              <div class="arch-row"><span>Deduplication</span><p>Removed an <code>unordered_set</code> from the marginal update path. The recorded 100,000-step benchmark fell from 2.5 to 1.8 seconds&mdash;a 28% reduction.</p></div>
+              <div class="arch-row"><span>Local movement</span><p>Accumulated all energy changes first, then moved each affected placement between buckets once. This eliminated the redundant bucket removals and insertions caused when one placement intersected several changed squares.</p></div>
+              <div class="arch-row"><span>Cached weights</span><p>A saved post-bucket profile exposed about 61.6 million repeated exponential evaluations. Since every bucket shares one weight, the next version cached exp(&minus;&beta;e) once per energy level and removed virtual dispatch from the hot update.</p></div>
+              <div class="arch-row"><span>Memory layout</span><p>Finally, the vectors of buckets were flattened into contiguous storage, reducing indirection while preserving constant-time membership updates through reverse indices.</p></div>
+            </div>
+          </article>
         </div>
+
+        <p class="caption">This account is reconstructed from the <a href="https://github.com/DaniilKardava/Battleship/commits/main/">commit history</a>, saved gprof snapshots, benchmark notes, and shell history confirming a VTune session on the C++ executable. The original VTune result directory was not committed, so the page reports only measurements that remain recoverable.</p>
       </div>
     </section>
 
