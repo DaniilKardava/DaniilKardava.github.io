@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Two actor–critic projects for 2048: one neural-network stack built from scratch and one implemented with TensorFlow and Keras.">
   <title>Reinforcement Learning for 2048 — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-2">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260810-3">
 </head>
 <body>
   <header class="site-header">
@@ -14,7 +14,8 @@
       <div class="nav-links">
         <a href="#problem">Problem</a>
         <a href="#implementations">Two builds</a>
-        <a href="#results">Results</a>
+        <a href="#scratch">From scratch</a>
+        <a href="#agent">Architecture</a>
         <a href="https://github.com/DaniilKardava/ReinforcementLearning">Source ↗</a>
       </div>
     </nav>
@@ -41,7 +42,13 @@
         <div class="body-copy">
           <p>2048 has only four actions—left, right, up, and down—but choosing well requires more than collecting the largest immediate merge. A move rearranges the whole board, a new tile appears at random, and a locally rewarding choice can destroy the structure needed to survive many turns later.</p>
           <p>That makes the game a compact reinforcement-learning problem. The agent must learn a policy under randomness, delayed consequences, a changing set of legal moves, and an enormous number of possible board configurations.</p>
-          <div class="formula">board → action → merge reward + new random tile</div>
+          <figure class="animation-frame rl-preview">
+            <video autoplay muted loop playsinline preload="metadata" data-loop-start="18" data-loop-end="30" aria-label="Short excerpt of the trained 2048 agent playing the game">
+              <source src="reinforcement-learning/artifacts/agent_2048_4x.mp4#t=18" type="video/mp4">
+              Your browser does not support embedded MP4 video.
+            </video>
+            <figcaption><strong>A trained policy in motion.</strong> This short loop shows how every action reorganizes the board before a new random tile appears.</figcaption>
+          </figure>
           <p>The project begins below the learning algorithm: it implements the game rules, transition function, rewards, terminal condition, and feature encodings from scratch.</p>
         </div>
       </div>
@@ -68,34 +75,98 @@
       </div>
     </section>
 
-    <section class="section" id="agent">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">Shared design</p>
-          <h2>One network chooses. Another judges.</h2>
-          <p>Both implementations use advantage actor–critic. The scratch version exposes how each gradient is constructed and propagated; the library version applies the same division of labor with Keras models and gradient tapes.</p>
+
+    <section class="section scratch-section" id="scratch">
+      <div class="site-shell">
+        <div class="section-heading">
+          <div><p class="eyebrow">From scratch</p><h2>The first version builds the machinery, not just the agent.</h2></div>
+          <p>NumPy and SciPy provide arrays and numerical primitives, but the environment, neural-network layers, gradients, optimizers, and actor–critic update are implemented directly.</p>
         </div>
-        <div class="architecture">
-          <div class="arch-row"><span>State</span><p>Each tile is encoded by its power of two, producing an 11-channel 4×4 representation that preserves the board’s spatial structure.</p></div>
-          <div class="arch-row"><span>Policy</span><p>A convolutional network outputs probabilities for the four directions and samples the agent’s next action.</p></div>
-          <div class="arch-row"><span>Value</span><p>A second convolutional network predicts return and supplies the advantage signal used to improve the policy.</p></div>
-          <div class="arch-row"><span>Mask</span><p>Moves that leave the board unchanged receive effectively zero probability, so the agent samples only valid actions.</p></div>
-          <div class="arch-row"><span>Reward</span><p>Merged tile values provide the learning signal, aligning return with the familiar score accumulated during a game.</p></div>
-          <div class="arch-row"><span>Models</span><p>In the Keras project, policy and value networks are saved independently so trained checkpoints can be evaluated and visualized later.</p></div>
+        <div class="scratch-grid">
+          <article>
+            <span>01 · Environment</span>
+            <h3>Make 2048 a learning problem.</h3>
+            <p>I implemented board movement and merging, random tile generation, rewards, terminal states, valid-action checks, and an 11-channel encoding of the 4×4 board.</p>
+          </article>
+          <article>
+            <span>02 · Network layers</span>
+            <h3>Build forward passes from arrays.</h3>
+            <p>Custom convolutional and dense layers turn the encoded board into learned features, with explicit activation functions, derivatives, and weight initialization.</p>
+          </article>
+          <article>
+            <span>03 · Backpropagation</span>
+            <h3>Carry the learning signal backward.</h3>
+            <p>Each layer computes its own parameter and input gradients. The implementation includes both SGD and Adam updates rather than relying on automatic differentiation.</p>
+          </article>
+          <article>
+            <span>04 · Actor–critic</span>
+            <h3>Connect prediction to control.</h3>
+            <p>The policy samples among valid moves, the value model estimates future return, and their difference supplies the advantage used to update both networks.</p>
+          </article>
         </div>
       </div>
     </section>
-
-    <section class="section">
+    <section class="section agent-system" id="agent">
       <div class="site-shell">
         <div class="section-heading">
-          <div><p class="eyebrow">Library implementation · training</p><h2>Learning is noisy, so the trend matters.</h2></div>
-          <p>The Keras experiment plots episode reward together with a 50-episode rolling mean. Individual games vary because tiles appear randomly, so the smoothed trace makes longer-term improvement easier to distinguish from lucky or unlucky games.</p>
+          <div><p class="eyebrow">Architecture and learning loop</p><h2>From board state to action—and back to an update.</h2></div>
+          <p>Both implementations use the same advantage actor–critic design. The diagram separates the neural-network architecture from the feedback loop that trains it.</p>
         </div>
-        <figure class="animation-frame">
-          <img src="reinforcement-learning/artifacts/learning_curve.png" alt="Training curve for the 2048 reinforcement-learning agent">
-          <figcaption><strong>Exploratory training history.</strong> Raw game rewards are shown alongside their rolling average. This is evidence that the implementation learned useful behavior during the run, not a controlled comparison against other 2048 agents.</figcaption>
-        </figure>
+
+        <div class="rl-system-diagram" aria-label="Actor–critic network architecture and reinforcement-learning loop">
+          <div class="network-panel">
+            <span class="diagram-label">Network architecture</span>
+            <div class="network-input diagram-node input-node"><small>Observation</small><strong>4×4×11 encoded board</strong><span>the same state is sent to two separate networks</span></div>
+            <div class="network-split" aria-hidden="true">↙ separate weights ↘</div>
+            <div class="network-parallel">
+              <div class="network-lane policy-lane">
+                <span class="lane-label">Actor · policy network</span>
+                <div class="lane-flow">
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>64 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Dense</small><strong>256 units</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node policy-node"><small>Masked softmax</small><strong>4 moves</strong></div>
+                </div>
+              </div>
+              <div class="network-lane value-lane">
+                <span class="lane-label">Critic · value network</span>
+                <div class="lane-flow">
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>128 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Conv 2×2</small><strong>64 filters</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node"><small>Dense</small><strong>256 units</strong></div>
+                  <div class="flow-arrow" aria-hidden="true">→</div>
+                  <div class="diagram-node value-node"><small>Scalar output</small><strong>V(state)</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="loop-panel">
+            <span class="diagram-label">Reinforcement-learning loop</span>
+            <div class="learning-loop">
+              <div class="loop-step"><strong>1</strong><span>Observe board</span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>2</strong><span>Sample valid move</span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>3</strong><span>Merge and spawn tile</span></div>
+              <div class="loop-arrow" aria-hidden="true">→</div>
+              <div class="loop-step"><strong>4</strong><span>Receive reward</span></div>
+            </div>
+            <div class="loop-return"><span>advantage = reward + γV(next state) − V(state)</span><strong>↺ update policy and value networks</strong></div>
+          </div>
+        </div>
+
+        <div class="architecture diagram-notes">
+          <div class="arch-row"><span>Representation</span><p>Each tile becomes one of 11 channels in a 4×4 tensor. The actor and critic receive the same representation but process it through separate convolutional networks with separate weights.</p></div>
+          <div class="arch-row"><span>Policy head</span><p>The actor assigns probabilities to left, right, up, and down. Invalid moves are masked before sampling so the agent only chooses actions that change the board.</p></div>
+          <div class="arch-row"><span>Value head</span><p>The critic estimates the return available from the current state. Comparing that estimate with the observed transition produces the advantage signal.</p></div>
+          <div class="arch-row"><span>Update</span><p>A positive advantage makes the sampled move more likely; a negative advantage makes it less likely. The value network simultaneously learns to make a better prediction.</p></div>
+        </div>
       </div>
     </section>
 
@@ -107,7 +178,7 @@
         </div>
         <div class="rl-results">
           <figure class="animation-frame rl-video">
-            <video autoplay muted loop playsinline controls preload="metadata">
+            <video muted playsinline controls preload="metadata">
               <source src="reinforcement-learning/artifacts/agent_2048_4x.mp4" type="video/mp4">
               Your browser does not support embedded MP4 video.
             </video>
@@ -120,23 +191,6 @@
         </div>
       </div>
     </section>
-
-    <section class="section">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">Broader workspace</p>
-          <h2>From fundamentals to applied agents.</h2>
-        </div>
-        <div class="body-copy">
-          <p>The repository also contains CartPole actor–critic implementations, a digit classifier, and experimental trading environments. Together with the paired 2048 builds, they document a progression from implementing the mechanics of neural networks and reinforcement learning to assembling complete agents with modern frameworks.</p>
-          <p>2048 is the clearest case study because the scratch and library versions make that progression directly comparable while sharing the same environment, representation, and learning objective.</p>
-          <div class="hero-actions">
-            <a class="button primary" href="https://github.com/DaniilKardava/ReinforcementLearning">Explore the source</a>
-            <a class="button secondary" href="../">Back to all projects</a>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="footer">
@@ -145,6 +199,6 @@
       <span>Exploratory reinforcement-learning work · Summer 2023</span>
     </div>
   </footer>
-  <script src="../assets/site.js"></script>
+  <script src="../assets/site.js?v=20260810-3"></script>
 </body>
 </html>
