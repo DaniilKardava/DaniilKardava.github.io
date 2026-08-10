@@ -30,23 +30,9 @@
         <ul class="project-meta" aria-label="Project technologies">
           <li>Gibbs sampling</li><li>Boltzmann distributions</li><li>Python prototype</li><li>C++ optimization</li>
         </ul>
-        <div class="status-note">
-          <span class="status-dot" aria-hidden="true"></span>
-          <p><strong>Milestone reached:</strong> on an exactly enumerable 4×4 case, the sampler reproduced the energy curve with 0.005 RMSE and recovered the number of valid configurations to within 0.11%.</p>
-        </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="site-shell">
-        <div class="metric-grid" aria-label="Project summary">
-          <div class="metric"><strong>2</strong><span>implementations<br>Python + C++</span></div>
-          <div class="metric"><strong>4</strong><span>supported<br>energy models</span></div>
-          <div class="metric"><strong>100k</strong><span>seeded samples in<br>the validation run</span></div>
-          <div class="metric"><strong>0.10%</strong><span>configuration-count<br>error</span></div>
-        </div>
-      </div>
-    </section>
 
     <section class="section" id="method">
       <div class="site-shell split">
@@ -129,9 +115,9 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Results</p>
-            <h2>Three views of the same counting identity.</h2>
+            <h2>Validating the counting method.</h2>
           </div>
-          <p>The method can be checked against exhaustive enumeration on a small board, against a closed-form answer on a full-size board, and against a simpler curve model that may reduce how many inverse-temperature values need to be sampled.</p>
+          <p>The method can be checked against exhaustive enumeration on a small board and against a closed-form answer on a full-size board.</p>
         </div>
 
         <div class="scratch-story">
@@ -139,7 +125,7 @@
             <div class="story-header">
               <span>01 &middot; Exhaustive enumeration</span>
               <h3>The 4&times;4 sampler tracks every configuration.</h3>
-              <p>For three labeled length-2 ships, all 13,824 configurations can be enumerated. A fixed-seed run used 4,000 independently initialized samples at each of 25 &beta; values and closely followed the exact Boltzmann expectation.</p>
+              <p>For three labeled length-2 ships, all 13,824 unconstrained configurations can be enumerated.</p>
             </div>
 
             <div class="chart-card">
@@ -159,7 +145,7 @@
                 <text x="65" y="330">0</text><text x="330" y="330">2</text><text x="598" y="330">4</text><text x="864" y="330">6</text>
                 <text x="405" y="354">inverse temperature &beta;</text>
               </svg>
-              <p class="caption">Curve RMSE: 0.00499. Thermodynamic integration estimated 6,257.5 zero-energy configurations; exhaustive enumeration gives 6,264&mdash;a 0.10% count error. See the <a href="https://github.com/DaniilKardava/Battleship/blob/agent/publish-project-site/CVersion/validation.cpp">validation source</a>, <a href="battleship/artifacts/small_exact_validation.csv">curve data</a>, and <a href="battleship/artifacts/small_exact_validation.json">experiment metadata</a>.</p>
+              <p class="caption">Curve RMSE: 0.00499. Thermodynamic integration estimated 6,257.5 zero-energy configurations; exhaustive enumeration gives 6,264&mdash;a 0.10% count error.</p>
             </div>
           </article>
 
@@ -172,12 +158,7 @@
 
             <div class="story-visual">
               <div class="formula" aria-label="The legal count equals 100 times 99 through 91">N<sub>legal</sub> = 100 &middot; 99 &middot; &hellip; &middot; 91 = 62,815,650,955,529,472,000</div>
-              <div class="evidence-grid" aria-label="Ten by ten validation summary">
-                <article><strong>0.464960</strong><span>sampled energy integral</span></article>
-                <article><strong>0.464966</strong><span>exact log count ratio</span></article>
-                <article><strong>0.0006%</strong><span>relative count error</span></article>
-              </div>
-              <p class="caption">The archived run contains 1,000 energy observations at each of 1,000 &beta; values from 0 through 9.99. Its integral estimates 6.281602&times;10<sup>19</sup> legal cell assignments, compared with the exact 6.281565&times;10<sup>19</sup>. This run used the binary collision energy then implemented in the code; like overflow energy, it is zero exactly on legal boards. See the <a href="https://github.com/DaniilKardava/Battleship/blob/a5cd41d013864fe5093dec59b987186e0814a9e2/CVersion/energies.txt">archived samples</a> and <a href="battleship/artifacts/large_k1_validation.json">derived metadata</a>.</p>
+              <p class="bucket-intro"><strong>Sampled estimate:</strong> 6.281602&times;10<sup>19</sup> legal arrangements. <strong>Relative error:</strong> 0.0006%.</p>
             </div>
           </article>
 
@@ -185,7 +166,7 @@
             <div class="story-header">
               <span>03 &middot; A compression conjecture</span>
               <h3>Can a few &beta; values stand in for the whole curve?</h3>
-              <p>The observed mean-energy curve is close to a single exponential, <span>a exp(&minus;b&beta;)</span>. If that shape persists across larger problems, a small number of sampled &beta; values could determine <em>a</em> and <em>b</em>, after which the required integral is simply <em>a</em>/<em>b</em>.</p>
+              <p>The observed mean-energy curve is close to a single exponential in &beta;. If that shape persists across larger problems, a small number of sampled &beta; values could determine <em>a</em> and <em>b</em>.</p>
             </div>
 
             <div class="chart-card">
@@ -205,7 +186,7 @@
                 <text x="65" y="330">0</text><text x="221" y="330">0.5</text><text x="385" y="330">1</text><text x="542" y="330">1.5</text><text x="706" y="330">2</text><text x="858" y="330">2.5</text>
                 <text x="405" y="354">inverse temperature &beta;</text>
               </svg>
-              <p class="caption">These five evenly spaced points give an analytic integral of 0.46638, 0.30% above the exact 0.46497; the implied configuration count is within 0.14%. This is an encouraging proof of concept, not yet evidence that one exponential works for every grid, fleet, or energy definition. See the <a href="battleship/artifacts/five_point_exponential_fit.csv">five-point data</a> and <a href="battleship/artifacts/large_k1_validation.json">fit parameters</a>.</p>
+              <p class="caption">These five evenly spaced points give an analytic integral of 0.46638, 0.30% above the exact 0.46497; the implied configuration count is within 0.14%. This is an encouraging proof of concept, not yet evidence that one exponential works for every grid, fleet, or energy definition.</p>
             </div>
           </article>
         </div>
