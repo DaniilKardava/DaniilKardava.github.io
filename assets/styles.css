@@ -59,6 +59,7 @@ p { color: var(--muted); line-height: 1.72; }
 .section { padding: 100px 0; border-top: 1px solid var(--line); }
 .section-heading { display: grid; grid-template-columns: minmax(0, .7fr) minmax(320px, 1fr); gap: 60px; align-items: end; margin-bottom: 54px; }
 .section-heading p { max-width: 680px; margin-bottom: 7px; font-size: var(--type-supporting); line-height: 1.52; }
+.pod-method-heading { align-items: start; }
 .numerical-heading { align-items: start; }
 .numerical-heading .body-copy { padding-top: 39px; }
 .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
@@ -135,6 +136,7 @@ p { color: var(--muted); line-height: 1.72; }
 .status-note p { margin: 0; font-size: var(--type-detail); }
 
 .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; background: var(--card); }
+.pod-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .metric { padding: 28px; border-right: 1px solid var(--line); }
 .metric:last-child { border-right: 0; }
 .metric strong { display: block; margin-bottom: 5px; font-family: Georgia, serif; font-size: 2rem; font-weight: 500; }
