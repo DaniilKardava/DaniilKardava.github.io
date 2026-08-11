@@ -40,12 +40,35 @@
             <p class="eyebrow">Case studies</p>
             <h2>Selected projects</h2>
           </div>
-          <p>Each case study focuses on the question behind the code, the experimental method, and what the results do—and do not—establish.</p>
         </div>
 
         <div class="project-grid">
+          <a class="project-card brownian-card" href="projects/brownian-boost.html">
+            <span class="project-number">PROJECT 01 · STOCHASTIC GAMES</span>
+            <div class="signal-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+            <h3>Tracking asymmetric incentives in Brownian Boost</h3>
+            <p>A high-precision study of the equilibrium incentive function <em>M</em>: how far player incentives can diverge, and how its shape changes along a singular parameter limit.</p>
+            <span class="arrow" aria-hidden="true">↗</span>
+          </a>
+
+          <a class="project-card pod-card" href="projects/pod-galerkin.html">
+            <span class="project-number">PROJECT 02 · QUANTUM SIMULATION</span>
+            <div class="quantum-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+            <h3>Scaling quantum simulation to thousands of states</h3>
+            <p>A statewise POD-Galerkin method replaces one growing dense solve with a sequence whose measured cost is near-linear in the number of states, while preserving accuracy through 2,990 states.</p>
+            <span class="arrow" aria-hidden="true">↗</span>
+          </a>
+
+          <a class="project-card rl-card" href="projects/reinforcement-learning.html">
+            <span class="project-number">PROJECT 03 · REINFORCEMENT LEARNING</span>
+            <div class="tile-stack" aria-hidden="true"><span>2</span><span>4</span><span>8</span><span>16</span></div>
+            <h3>Building a 2048 agent from scratch—and with Keras</h3>
+            <p>Two actor–critic implementations: a hand-built neural-network framework with derived convolutional and dense backpropagation, followed by a TensorFlow/Keras agent that reaches 2048.</p>
+            <span class="arrow" aria-hidden="true">↗</span>
+          </a>
+
           <a class="project-card" href="projects/battleship.html">
-            <span class="project-number">PROJECT 01 · MONTE CARLO</span>
+            <span class="project-number">PROJECT 04 · MONTE CARLO</span>
             <div class="mini-board" aria-hidden="true">
               <span></span><span></span><span></span><span></span><span></span><span></span>
               <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -54,32 +77,8 @@
               <span></span><span></span><span></span><span></span><span></span><span></span>
               <span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
-            <h3>Counting ship configurations with statistical mechanics</h3>
-            <p>A Gibbs sampler, a Boltzmann energy model, and a validated count within 0.11% of exact enumeration.</p>
-            <span class="arrow" aria-hidden="true">↗</span>
-          </a>
-
-          <a class="project-card brownian-card" href="projects/brownian-boost.html">
-            <span class="project-number">PROJECT 02 · SCIENTIFIC COMPUTING</span>
-            <div class="signal-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
-            <h3>Resolving structure beyond floating-point noise</h3>
-            <p>Arb intervals, MPFR precision, adaptive truncation, and threaded sweeps for values of M(x) extraordinarily close to 1.</p>
-            <span class="arrow" aria-hidden="true">↗</span>
-          </a>
-
-          <a class="project-card rl-card" href="projects/reinforcement-learning.html">
-            <span class="project-number">PROJECT 03 · REINFORCEMENT LEARNING</span>
-            <div class="tile-stack" aria-hidden="true"><span>2</span><span>4</span><span>8</span><span>16</span></div>
-            <h3>Building a 2048 agent twice</h3>
-            <p>First implement the neural-network and actor–critic machinery from scratch; then use TensorFlow/Keras to train and record an agent that reaches 2048.</p>
-            <span class="arrow" aria-hidden="true">↗</span>
-          </a>
-
-          <a class="project-card pod-card" href="projects/pod-galerkin.html">
-            <span class="project-number">PROJECT 04 · MODEL-ORDER REDUCTION</span>
-            <div class="quantum-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
-            <h3>Scaling quantum reduced-order models to thousands of states</h3>
-            <p>A statewise POD-Galerkin method with improved many-eigenstate scaling and DNS-validated accuracy through 2,990 states.</p>
+            <h3>Counting legal Battleship boards with Gibbs sampling</h3>
+            <p>A statistical-mechanics identity turns a difficult combinatorial count into an integral of sampled mean energies, validated on both small and full-size boards.</p>
             <span class="arrow" aria-hidden="true">↗</span>
           </a>
         </div>
