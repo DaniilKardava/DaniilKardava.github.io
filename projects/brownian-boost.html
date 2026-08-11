@@ -89,47 +89,18 @@
     </section>
 
     <section class="section" id="numerical">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">Numerical track</p>
-          <h2>A small signal hidden in a large series.</h2>
-        </div>
-        <div class="body-copy">
-          <p>The formulas for <em>M</em> are explicit, but evaluating them is not straightforward. Each value is assembled from a long iterated series. In the most interesting regimes, many large contributions nearly cancel and leave a result extremely close to 1.</p>
-          <div class="formula">h(x; κ, ρ) = M(x; κ, ρ) − 1</div>
-          <p>Ordinary floating-point arithmetic can lose the tiny remainder that tells us which player has the stronger local incentive. As ρ becomes small, the series also requires more terms and the curve develops increasingly fine oscillations. The computational challenge is to preserve that structure without mistaking numerical noise for behavior of the model.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">Techniques used</p>
-          <h2>Explore quickly. Recompute carefully. Track the error.</h2>
-          <p>Several numerical paths let the project trade speed for precision and then check delicate regions with stronger methods.</p>
-        </div>
-        <div class="architecture">
-          <div class="arch-row"><span>Double</span><p>Fast C++ sweeps reveal the broad geometry and identify regions that deserve closer inspection.</p></div>
-          <div class="arch-row"><span>MPFR</span><p>Configurable-precision arithmetic preserves centered values that disappear in ordinary float64 calculations.</p></div>
-          <div class="arch-row"><span>Arb</span><p>Interval arithmetic encloses results and makes numerical uncertainty visible instead of hiding it in a decimal.</p></div>
-          <div class="arch-row"><span>Truncation</span><p>Tail bounds choose the series depth adaptively as the parameters move into more difficult regimes.</p></div>
-          <div class="arch-row"><span>Safeguards</span><p>Explicit bracketing, centered evaluation, and endpoint handling prevent optimization failures from looking like valid answers.</p></div>
-          <div class="arch-row"><span>Scale</span><p>OpenMP and cluster scripts distribute parameter sweeps while retaining the diagnostics needed to revisit each point.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="results">
       <div class="site-shell">
         <div class="section-heading">
-          <div><p class="eyebrow">What the computation reveals</p><h2>From incentive maps to vibrating curves.</h2></div>
-          <p>The same object can be viewed globally across parameters or locally as a curve. Together, these views show where asymmetric incentives are strongest and how the structure becomes more intricate near the edge of the parameter regime.</p>
+          <div><p class="eyebrow">Numerical exploration</p><h2>Why isn’t M always one?</h2></div>
+          <div class="body-copy">
+            <p>At first glance, one might expect <em>M</em> to be identically one: in a game that can continue for so long, even a tiny incentive advantage has time to accumulate. Instead, the equilibrium family supports small but nonzero asymmetries, so we set out to visualize how large <em>M</em> − 1 can become across the (κ, ρ) parameter space.</p>
+            <p>Producing these plots required repeatedly inverting the move map and evaluating long, numerically unstable series with high-precision arithmetic, adaptive tail bounds, parallel C++ sweeps, and cluster runs.</p>
+          </div>
         </div>
 
         <figure class="animation-frame">
-          <img src="brownian-boost/artifacts/lambda_max_parameter_space.png" alt="Grayscale heatmap of lambda max over the kappa and rho parameter space">
-          <figcaption><strong>The maximum incentive asymmetry across parameter space.</strong> Each point represents a choice of the dimensionless parameters κ and ρ. Lighter values indicate a larger λ<sub>max</sub>: a greater asymmetry supported by the corresponding equilibrium. The bright contours organize the parameter space into repeated bands.</figcaption>
+          <img src="brownian-boost/artifacts/lambda_max_parameter_space.png" alt="Grayscale heatmap of the transformed maximum of M minus 1 over the kappa and rho parameter space">
+          <figcaption><strong>The maximum of M − 1 over the equilibrium family.</strong> For each pair (κ, ρ), we maximize <em>M</em><sub>κ,ρ</sub>(<em>x</em>) − 1 over the local incentive <em>x</em>. The result is shown on a transformed scale because the maximum spans many orders of magnitude; lighter regions correspond to smaller maximum asymmetry.</figcaption>
         </figure>
 
         <figure class="animation-frame">
@@ -137,7 +108,7 @@
             <source src="brownian-boost/artifacts/m_curve_vibration_4x.mp4" type="video/mp4">
             Your browser does not support embedded MP4 video.
           </video>
-          <figcaption><strong>The M curve as ρ approaches zero.</strong> The curve records incentive asymmetry across the state variable. As ρ decreases, new oscillations appear and concentrate at finer scales—the “vibration” that makes this limit visually compelling and numerically unstable. The full recording is shown at 4× speed without trimming.</figcaption>
+          <figcaption><strong>M − 1 on a fixed domain as ρ approaches zero.</strong> With κ = 1, the natural domain of <em>x</em> shrinks toward one. A ρ-dependent transformation maps each domain to the same interval, allowing the centered curves to be compared frame by frame and revealing increasingly rapid oscillation as ρ decreases.</figcaption>
         </figure>
       </div>
     </section>
