@@ -90,11 +90,11 @@
 
     <section class="section" id="numerical">
       <div class="site-shell">
-        <div class="section-heading">
+        <div class="section-heading numerical-heading">
           <div><p class="eyebrow">Numerical exploration</p><h2>Why isn’t M always one?</h2></div>
           <div class="body-copy">
             <p>At first glance, one might expect <em>M</em> to be identically one: in a game that can continue for so long, even a tiny incentive advantage has time to accumulate. Instead, the equilibrium family supports small but nonzero asymmetries, so we set out to visualize how large <em>M</em> − 1 can become across the (κ, ρ) parameter space.</p>
-            <p>Producing these plots required repeatedly inverting the move map and evaluating long, numerically unstable series with high-precision arithmetic, adaptive tail bounds, parallel C++ sweeps, and cluster runs.</p>
+            <p>Producing these plots required new numerically stable expressions for the series defining <em>M</em>, high-precision arithmetic, adaptive tail bounds for truncation, and parallel C++ sweeps deployed on the Berkeley Research Computing Cluster.</p>
           </div>
         </div>
 
