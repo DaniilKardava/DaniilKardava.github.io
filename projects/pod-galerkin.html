@@ -14,7 +14,6 @@
       <div class="nav-links">
         <a href="#context">Context</a>
         <a href="#method">Method</a>
-        <a href="#scaling">Scaling</a>
         <a href="#accuracy">Accuracy</a>
       </div>
     </nav>
@@ -43,54 +42,28 @@
           </div>
         </div>
         <div class="body-copy">
-          <p>Solving the Schrödinger equation on a fine spatial grid produces a large matrix eigenvalue problem. Direct numerical simulation is accurate, but repeating that solve for many device configurations can be expensive.</p>
-          <p>Clarkson’s POD-Galerkin workflow replaces the full grid with a basis learned from previously computed wavefunctions. Proper orthogonal decomposition identifies recurring spatial patterns in those training solutions; Galerkin projection then expresses the Schrödinger operator inside that much smaller space.</p>
-          <div class="formula">full spatial problem → learned POD basis → reduced Hamiltonian</div>
-          <p>The approach remains physics-guided: data chooses a compact basis, but the governing Hamiltonian determines the reduced eigenproblem. Earlier work by Ming-Cheng Cheng and collaborators demonstrated this idea for quantum wells and element-based nanostructures.</p>
+          <p>The Schrödinger equation governs the quantum behavior of atoms, molecules, semiconductor nanostructures, quantum wells, and quantum dots. Designing and simulating these systems often requires solving it repeatedly, and this project is designed to accelerate that process.</p>
+          <p>Solving the Schrödinger equation typically produces a large matrix eigenvalue problem. These numerical methods can be highly accurate, but repeating the solve across many configurations quickly becomes expensive.</p>
+          <p>We often care primarily about the leading eigenvalues and the eigenspace spanned by their eigenvectors. The POD-Galerkin workflow learns a compact basis for this important subspace from previously computed solutions. Restricting the original matrix to that basis produces a much smaller eigenproblem, with dimension roughly comparable to the number of eigenvalues sought.</p>
         </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="site-shell">
-        <div class="section-heading">
-          <div><p class="eyebrow">Example states</p><h2>What the solver is trying to preserve.</h2></div>
-          <p>Each eigenstate is a signed spatial wavefunction. Higher states develop more nodes and finer structure, so a reduced model must preserve an increasingly diverse family of patterns—not merely approximate the ground state.</p>
-        </div>
-        <figure class="animation-frame">
-          <img src="pod-galerkin/artifacts/gaussian_eigenstates_1_12.png" alt="Heatmaps of the first twelve quantum eigenstates from a Gaussian quantum-well example">
-          <figcaption><strong>The first twelve states of a Gaussian quantum-well sample.</strong> Red and blue indicate opposite signs of the wavefunction. The growing spatial complexity helps explain why a single compact basis becomes harder to use as the requested spectrum expands.</figcaption>
-        </figure>
       </div>
     </section>
 
     <section class="section" id="method">
-      <div class="site-shell split">
-        <div>
-          <p class="eyebrow">My contribution</p>
-          <h2>Replace one growing global solve with a sequence of local ones.</h2>
-          <p>The traditional workflow collects all retained POD modes into one global reduced Hamiltonian. Requesting more eigenstates therefore enlarges one dense matrix whose diagonalization becomes progressively more expensive.</p>
-        </div>
-        <div class="architecture">
-          <div class="arch-row"><span>Separate</span><p>Build a dedicated POD basis Φ<sub>j</sub> from the training snapshots associated with eigenstate family j.</p></div>
-          <div class="arch-row"><span>Stream</span><p>Solve states sequentially rather than diagonalizing one reduced matrix large enough to contain the full requested spectrum.</p></div>
-          <div class="arch-row"><span>Constrain</span><p>For state j, construct a coefficient-space nullspace that enforces orthogonality to all wavefunctions already accepted.</p></div>
-          <div class="arch-row"><span>Reduce</span><p>Diagonalize the constrained Hamiltonian inside the current state’s small POD space and keep its lowest Ritz pair.</p></div>
-          <div class="arch-row"><span>Track</span><p>Use overlap, residual, ordering, and ambiguity diagnostics to keep nearby or nearly degenerate states aligned.</p></div>
-          <div class="arch-row"><span>Scale</span><p>Keep the expensive Hamiltonian work local while the requested number of eigenstates grows into the thousands.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="scaling">
       <div class="site-shell">
         <div class="section-heading">
-          <div><p class="eyebrow">Scaling evidence</p><h2>The growth rate bends in the right direction.</h2></div>
-          <p>In the current benchmark, the global dense solver remains faster in absolute time at 3,000 states. Its cost, however, grows much more steeply: the measured edge exponent rises above 2, while the statewise sequential method stays near 1.1–1.3 through the tested high-state regime.</p>
+          <div>
+            <p class="eyebrow">My contribution</p>
+            <h2>Replace one growing global solve with a sequence of local ones.</h2>
+          </div>
+          <div class="body-copy">
+            <p>The traditional workflow builds a single reduced space large enough to contain all <em>K</em> eigenvectors we want to compute. It then diagonalizes a dense reduced matrix whose dimension grows with <em>K</em>; because dense diagonalization is cubic in matrix dimension, this creates an O(<em>K</em><sup>3</sup>) scaling bottleneck.</p>
+            <p>We are developing a statewise alternative whose measured cost grows approximately linearly with <em>K</em> over the tested range. This makes it possible to extend the POD-Galerkin workflow toward problems that require a very large number of eigenstates.</p>
+          </div>
         </div>
         <figure class="animation-frame">
-          <img src="pod-galerkin/artifacts/local_vs_global_scaling.png" alt="Log-log timing comparison between global dense and local sequential POD-Galerkin solves">
-          <figcaption><strong>Online solve time versus requested eigenpairs.</strong> Numbers on the line segments are empirical local power-law exponents. The global solve reaches exponents of 2.39–2.56 at its largest tested sizes; the sequential method measures 1.12–1.33 from 800 to 3,000 states. This supports better asymptotic scaling, while not yet establishing a measured crossover in wall-clock time.</figcaption>
+          <img src="pod-galerkin/artifacts/local_vs_global_scaling.png" alt="Log-log timing comparison of a global reduced solver and a sequential statewise solver">
+          <figcaption><strong>Online solve time versus requested eigenpairs.</strong> The global reduced solve grows increasingly steeply as <em>K</em> increases, while the statewise method remains near-linear across the high-state regime tested. The global method is still faster at <em>K</em> = 3,000, but the contrasting slopes show why the statewise formulation is intended for much larger spectra.</figcaption>
         </figure>
       </div>
     </section>
