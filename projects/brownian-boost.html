@@ -47,7 +47,18 @@
           <p>A token moves back and forth on the integer lattice. Maxine wants to push it to the right; Mina wants to push it to the left. Both players are offered a reward if the ticker eventually drifts in their direction. At every position, both players choose a stake. Larger stakes improve their chance of controlling the next step, but they also cost more—so every move asks the same question: how much is a small advantage worth?</p>
           <p>In the simplest version of the game, if Maxine and Mina stake <em>a</em> and <em>b</em>, the probability of moving right is</p>
           <div class="formula">P(right) = a/(a + b)</div>
-          <p>The newer model places this rule inside a two-parameter family:</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="equilibria">
+      <div class="site-shell split">
+        <div>
+          <p class="eyebrow">Equilibrium strategies</p>
+          <h2>One local incentive describes an entire strategy.</h2>
+        </div>
+        <div class="body-copy">
+          <p>The newer model places the original move rule inside a two-parameter family:</p>
           <div class="formula">P(right) = (1 − κ)/2 + κa<sup>ρ</sup>/(a<sup>ρ</sup> + b<sup>ρ</sup>)</div>
           <p>Setting κ = ρ = 1 recovers the original <em>a</em>/(<em>a</em> + <em>b</em>) rule. More generally, κ controls the mixture between a fair coin and competition, while ρ determines how strongly the contest rewards the larger stake.</p>
           <p>We study strategies that depend only on the token’s position. It turns out that this entire class of equilibrium strategies can be parameterized by a single positive number, <em>x</em>: the ratio of Mina’s derivative of expected return to Maxine’s derivative of expected return near the center of the board. We call <em>x</em> the <strong>local incentive</strong>.</p>
