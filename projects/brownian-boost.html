@@ -100,15 +100,27 @@
 
         <figure class="animation-frame">
           <img src="brownian-boost/artifacts/lambda_max_parameter_space.png" alt="Grayscale heatmap of the transformed maximum of M minus 1 over the kappa and rho parameter space">
-          <figcaption><strong>The maximum of M − 1 over the equilibrium family.</strong> For each pair (κ, ρ), we maximize <em>M</em><sub>κ,ρ</sub>(<em>x</em>) − 1 over the local incentive <em>x</em>. The result is shown on a transformed scale because the maximum spans many orders of magnitude; lighter regions correspond to smaller maximum asymmetry.</figcaption>
+          <figcaption><strong>The maximum of M − 1 over the equilibrium family.</strong> For each pair (κ, ρ), we maximize <em>M</em><sub>κ,ρ</sub>(<em>x</em>) − 1 over the local incentive <em>x</em>. The grayscale plot shows log<sub>10</sub>(−log<sub>10</sub>(max<sub><em>x</em></sub>(<em>M</em><sub>κ,ρ</sub>(<em>x</em>) − 1))); lighter regions therefore correspond to smaller maximum asymmetry.</figcaption>
         </figure>
+
+      </div>
+    </section>
+
+    <section class="section" id="rho-slice">
+      <div class="site-shell">
+        <div class="section-heading numerical-heading">
+          <div><p class="eyebrow">Parameter slice</p><h2>M on the (1, ρ) parameter slice.</h2></div>
+          <div class="body-copy">
+            <p>In the black-and-gray plot above, we see that the maximum of <em>M</em> − 1 dips sharply near κ = 1, ρ = 0.96. Normalizing <em>M</em> − 1 to have a constant L<sup>2</sup> norm and animating it along the segment κ = 1 reveals fascinating qualitative transitions.</p>
+          </div>
+        </div>
 
         <figure class="animation-frame">
           <video autoplay muted loop playsinline controls preload="metadata">
             <source src="brownian-boost/artifacts/m_curve_vibration_4x.mp4" type="video/mp4">
             Your browser does not support embedded MP4 video.
           </video>
-          <figcaption><strong>M − 1 on a fixed domain as ρ approaches zero.</strong> With κ = 1, the natural domain of <em>x</em> shrinks toward one. A ρ-dependent transformation maps each domain to the same interval, allowing the centered curves to be compared frame by frame and revealing increasingly rapid oscillation as ρ decreases.</figcaption>
+          <figcaption><strong>M − 1 on a transformed domain.</strong> This is a convenient domain for visualizing <em>M</em> as ρ varies. The scaling was chosen arbitrarily, with the intent of seeing <em>M</em> after removing scaling effects.</figcaption>
         </figure>
       </div>
     </section>
