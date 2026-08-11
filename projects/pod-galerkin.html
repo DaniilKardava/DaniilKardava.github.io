@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A scalable statewise POD-Galerkin method for computing thousands of quantum eigenstates.">
   <title>Scalable POD-Galerkin Quantum Simulation — Daniil Kardava</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=20260810-5">
+  <link rel="stylesheet" href="../assets/styles.css?v=20260811-1">
 </head>
 <body>
   <header class="site-header">
@@ -42,16 +42,16 @@
           </div>
         </div>
         <div class="body-copy">
-          <p>The Schrödinger equation is central to problems across quantum chemistry, materials science, semiconductor engineering, and quantum computing. Designing and simulating these systems often requires solving it repeatedly, and this project is designed to accelerate that process.</p>
-          <p>Solving the Schrödinger equation typically produces a large matrix eigenvalue problem. These numerical methods can be highly accurate, but repeating the solve across many configurations quickly becomes expensive.</p>
-          <p>We often care primarily about the leading eigenvalues and the eigenspace spanned by their eigenvectors. The POD-Galerkin workflow learns a compact basis for this important subspace from previously computed solutions. Restricting the original matrix to that basis produces a much smaller eigenproblem, with dimension roughly comparable to the number of eigenvalues sought.</p>
+          <p>Many problems in quantum chemistry, materials science, semiconductor design, and quantum computing depend on predicting a system’s energy levels and quantum states. Researchers often need to repeat this calculation as the system’s geometry, materials, or operating conditions change. This project explores how to make those repeated simulations much faster.</p>
+          <p>After the Schrödinger equation is discretized, finding these states becomes a large matrix eigenvalue problem. Standard numerical methods are accurate, but repeatedly solving the full problem can be prohibitively expensive.</p>
+          <p>The POD-Galerkin workflow focuses the computation on the portion of the spectrum we actually need. It uses previously computed quantum states to learn a compact basis, then projects the original matrix into that smaller space. The result is a reduced eigenvalue problem sized by the number of states we want to recover rather than by the much larger spatial discretization.</p>
         </div>
       </div>
     </section>
 
     <section class="section" id="method">
       <div class="site-shell">
-        <div class="section-heading">
+        <div class="section-heading pod-method-heading">
           <div>
             <p class="eyebrow">My contribution</p>
             <h2>Replace one growing global solve with a sequence of local ones.</h2>
@@ -72,39 +72,24 @@
       <div class="site-shell">
         <div class="section-heading">
           <div><p class="eyebrow">Accuracy milestone</p><h2>Thousands of states, checked against DNS.</h2></div>
-          <p>A 3,000-state run on a 5×5 square quantum-well system was compared state by state with direct numerical simulation. The clean validation scope includes states 1–2990; a matching disagreement begins at state 2991, so the final ten states are intentionally excluded below.</p>
+          <div class="body-copy">
+            <p>A 3,000-state run on a 5×5 square quantum-well system was compared with direct numerical simulation through the first 2,990 states.</p>
+            <p>Eigenvalue error measures how closely each predicted energy matches its reference value. Grassmann error compares the cumulative eigenspaces: zero means the spaces coincide, while larger values mean their directions are drifting apart.</p>
+          </div>
         </div>
         <div class="metric-grid pod-metrics" aria-label="Accuracy summary through state 2990">
-          <div class="metric"><strong>2,990</strong><span>states in the clean<br>validation scope</span></div>
-          <div class="metric"><strong>3.44×10<sup>−7</sup></strong><span>median absolute<br>energy error</span></div>
-          <div class="metric"><strong>0.999986</strong><span>median absolute<br>DNS overlap</span></div>
-          <div class="metric"><strong>0.9971</strong><span>minimum overlap<br>within scope</span></div>
+          <div class="metric"><strong>1.88×10<sup>−6</sup></strong><span>maximum relative<br>eigenvalue error</span></div>
+          <div class="metric"><strong>99.9998%</strong><span>cumulative eigenspace<br>overlap at <em>K</em> = 2,990</span></div>
         </div>
         <div class="pod-evidence-grid">
           <figure class="animation-frame">
-            <img src="pod-galerkin/artifacts/spectrum_agreement_2990.png" alt="Agreement between POD-Galerkin and direct numerical simulation spectra through state 2990">
-            <figcaption><strong>Spectrum agreement.</strong> The statewise reduced solution follows the DNS energy spectrum through the validated portion of the run.</figcaption>
+            <img src="pod-galerkin/artifacts/relative_eigenvalue_error_2990.png" alt="Relative eigenvalue error through state 2990">
+            <figcaption><strong>Eigenvalue accuracy.</strong> The relative error remains below 1.88×10<sup>−6</sup> across all 2,990 states shown.</figcaption>
           </figure>
           <figure class="animation-frame">
-            <img src="pod-galerkin/artifacts/relative_eigenvalue_error_2990.png" alt="Relative eigenvalue error through state 2990">
-            <figcaption><strong>Eigenvalue error by state.</strong> A state-resolved view makes local loss of accuracy visible instead of hiding it inside one aggregate number.</figcaption>
+            <img src="pod-galerkin/artifacts/normalized_cumulative_grassmann_error_2990.png" alt="Normalized cumulative Grassmann error through state 2990">
+            <figcaption><strong>Eigenspace accuracy.</strong> At <em>K</em> = 2,990, the normalized Grassmann distance is 0.00147. Expressed as 1 − <em>d</em><sub>G</sub><sup>2</sup>, this corresponds to 99.9998% normalized squared overlap between the computed and reference eigenspaces.</figcaption>
           </figure>
-        </div>
-        <p class="caption pod-caveat"><strong>Current status:</strong> these are research-development benchmarks, not a finalized performance study. The scaling comparison and 5×5 accuracy run use preserved server outputs with their validated plotting scope.</p>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="site-shell split">
-        <div><p class="eyebrow">What comes next</p><h2>Turn improved scaling into a robust solver.</h2></div>
-        <div class="body-copy">
-          <p>The next work is concentrated at the difficult end of the spectrum: improving state tracking near ambiguous and nearly degenerate eigenpairs, reducing the remaining selection cost, and extending matched DNS validation cleanly through all 3,000 requested states.</p>
-          <p>The core result is already visible: organizing the reduced model around individual state families changes how the online solve scales, creating a viable path toward quantum calculations that require many eigenstates.</p>
-          <div class="status-note">
-            <span class="status-dot" aria-hidden="true"></span>
-            <p><strong>Active research:</strong> source code and full server artifacts are currently maintained in a private research repository.</p>
-          </div>
-          <div class="hero-actions"><a class="button secondary" href="../">Back to all projects</a></div>
         </div>
       </div>
     </section>

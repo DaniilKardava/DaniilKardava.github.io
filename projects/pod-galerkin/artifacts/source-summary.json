@@ -24,17 +24,22 @@
     "problem": "5x5 square quantum-well system",
     "requested_states": 3000,
     "validated_states": 2990,
-    "excluded_state_range": [2991, 3000],
+    "excluded_state_range": [
+      2991,
+      3000
+    ],
     "exclusion_reason": "DNS-overlap disagreement begins at state 2991",
     "median_absolute_energy_error": 3.44113685102343e-7,
-    "maximum_absolute_energy_error": 6.83879492555661e-5,
+    "maximum_absolute_energy_error": 0.0000683879492555661,
     "median_absolute_dns_overlap": 0.999985670925971,
-    "minimum_absolute_dns_overlap": 0.997070338156217
+    "minimum_absolute_dns_overlap": 0.997070338156217,
+    "maximum_relative_eigenvalue_error": 0.0000018799020010991,
+    "normalized_grassmann_distance_at_2990": 0.001472341580872831,
+    "normalized_squared_eigenspace_overlap_at_2990": 0.999997832210269
   },
   "portfolio_media": [
-    "gaussian_eigenstates_1_12.png",
     "local_vs_global_scaling.png",
-    "spectrum_agreement_2990.png",
-    "relative_eigenvalue_error_2990.png"
+    "relative_eigenvalue_error_2990.png",
+    "normalized_cumulative_grassmann_error_2990.png"
   ]
 }
