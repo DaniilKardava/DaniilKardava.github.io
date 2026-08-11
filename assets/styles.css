@@ -69,6 +69,15 @@ p { color: var(--muted); line-height: 1.72; }
 .project-card.placeholder { background: transparent; box-shadow: none; border-style: dashed; }
 .project-card.placeholder h3 { margin-top: 190px; color: var(--muted); }
 .project-number { display: block; max-width: calc(100% - 170px); color: var(--green); font-size: var(--type-card-label); line-height: 1.35; font-weight: 800; letter-spacing: .1em; }
+.writing-list { border-top: 1px solid var(--line); }
+.writing-entry { display: grid; grid-template-columns: minmax(170px, .32fr) minmax(0, 1fr); gap: 58px; padding: 40px 0; border-bottom: 1px solid var(--line); }
+.writing-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+.writing-meta strong { font-family: Georgia, serif; font-size: 1.8rem; font-weight: 500; }
+.writing-meta span { color: var(--orange); font-size: var(--type-label); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.writing-content h3 { max-width: 780px; margin: 0 0 16px; font-family: Georgia, serif; font-size: clamp(1.8rem, 3.2vw, 2.7rem); font-weight: 500; line-height: 1.08; letter-spacing: -.025em; }
+.writing-content p { max-width: 780px; margin: 0; color: var(--muted); font-size: var(--type-supporting); line-height: 1.62; }
+.writing-link { display: inline-flex; gap: 8px; margin-top: 22px; color: var(--green); font-size: var(--type-detail); font-weight: 800; text-decoration: none; }
+.writing-link:hover { text-decoration: underline; }
 .mini-board { position: absolute; top: 36px; right: 38px; display: grid; grid-template-columns: repeat(6, 18px); gap: 4px; transform: rotate(4deg); }
 .mini-board span { width: 18px; height: 18px; border-radius: 3px; background: var(--green-light); }
 .mini-board span:nth-child(6n + 2), .mini-board span:nth-child(6n + 3), .mini-board span:nth-child(13), .mini-board span:nth-child(19) { background: var(--orange); }
@@ -388,6 +397,8 @@ p { color: var(--muted); line-height: 1.72; }
   .section-heading, .split { grid-template-columns: 1fr; gap: 24px; }
   .numerical-heading .body-copy { padding-top: 0; }
   .project-grid, .roadmap, .track-grid, .theory-placeholder, .rl-results, .pod-evidence-grid { grid-template-columns: 1fr; }
+  .writing-entry { grid-template-columns: 1fr; gap: 20px; }
+  .writing-meta { flex-direction: row; align-items: baseline; gap: 14px; }
   .rl-card, .pod-card { grid-column: auto; }
   .theory-placeholder { gap: 18px; padding: 28px; }
   .project-card { min-height: 600px; padding: 28px 76px 86px 28px; }
