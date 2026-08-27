@@ -24,16 +24,14 @@
   },
   "rho_animation_sweep": {
     "kappa": 1.0,
-    "rho_range": [0.05, 1.0],
-    "rho_slices": 81,
+    "rho_range": [0.9645, 0.9646],
+    "rho_slices": 1001,
     "x_points_per_slice": 241,
-    "total_points": 19521,
-    "truncation_target": 1e-8,
-    "points_meeting_truncation_criterion": 19521,
-    "series_depth_range": [4, 91],
-    "display_normalization": "per-slice L2 norm",
-    "display_coordinate": "log(x) / log(b)",
-    "saved_frames": 41
+    "total_points": 241241,
+    "display_normalization": "unit per-slice L2 norm with respect to the displayed coordinate du",
+    "display_coordinate": "u = log(x) / log(b), b = (2 + rho) / (2 - rho)",
+    "display_domain": [-1.0, 1.0],
+    "saved_frames": 201
   },
   "portfolio_media": {
     "lambda_max_parameter_space": {
@@ -41,12 +39,9 @@
       "source": "user-supplied exploratory rendering"
     },
     "m_curve_recording": {
-      "file": "m_curve_vibration_4x.mp4",
-      "source_duration_seconds": 36.096,
-      "display_duration_seconds": 8.967,
-      "speed_multiplier": 4,
-      "trimmed": false,
-      "audio_removed": true
+      "file": "m_critical_vibration_l2_log_clean.gif",
+      "frames": 201,
+      "display_normalization": "unit L2 norm on the displayed u domain"
     }
   }
 }
